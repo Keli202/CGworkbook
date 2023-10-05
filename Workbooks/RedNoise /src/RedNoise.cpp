@@ -6,6 +6,8 @@
 #include <glm/glm.hpp>
 #define WIDTH 320
 #define HEIGHT 240
+#include <CanvasPoint.h>
+#include <Colour.h>
 using namespace std;
 using namespace glm;
 std::vector<float> interpolateSingleFloats(float from,float to, int numberOfValues){
@@ -58,36 +60,53 @@ void drawColor(DrawingWindow &window){
 }
 
 void draw(DrawingWindow &window) {
-	window.clearPixels();
+    window.clearPixels();
     int Width = static_cast<int>(window.width);
     std::vector<float> gradient = interpolateSingleFloats(255.0f, 0.0f, Width);
 
     for (size_t y = 0; y < window.height; y++) {
-		for (size_t x = 0; x < window.width; x++) {
-			//float red = rand() % 256;
-			//float green = 0.0;
-			//float blue = 0.0;
+        for (size_t x = 0; x < window.width; x++) {
+            //float red = rand() % 256;
+            //float green = 0.0;
+            //float blue = 0.0;
             float greyValue = gradient[x];
-			//uint32_t colour = (255 << 24) + (int(red) << 16) + (int(green) << 8) + int(blue);
+            //uint32_t colour = (255 << 24) + (int(red) << 16) + (int(green) << 8) + int(blue);
             uint32_t colour = (255<<24)+ (int(greyValue) << 16) + (int(greyValue) << 8) + int(greyValue);
-			window.setPixelColour(x, y, colour);
-		}
-	}
+            window.setPixelColour(x, y, colour);
+        }
+    }
 }
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
-	if (event.type == SDL_KEYDOWN) {
-		if (event.key.keysym.sym == SDLK_LEFT) std::cout << "LEFT" << std::endl;
-		else if (event.key.keysym.sym == SDLK_RIGHT) std::cout << "RIGHT" << std::endl;
-		else if (event.key.keysym.sym == SDLK_UP) std::cout << "UP" << std::endl;
-		else if (event.key.keysym.sym == SDLK_DOWN) std::cout << "DOWN" << std::endl;
-	} else if (event.type == SDL_MOUSEBUTTONDOWN) {
-		window.savePPM("output.ppm");
-		window.saveBMP("output.bmp");
-	}
+    if (event.type == SDL_KEYDOWN) {
+        if (event.key.keysym.sym == SDLK_LEFT) std::cout << "LEFT" << std::endl;
+        else if (event.key.keysym.sym == SDLK_RIGHT) std::cout << "RIGHT" << std::endl;
+        else if (event.key.keysym.sym == SDLK_UP) std::cout << "UP" << std::endl;
+        else if (event.key.keysym.sym == SDLK_DOWN) std::cout << "DOWN" << std::endl;
+    } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+        window.savePPM("output.ppm");
+        window.saveBMP("output.bmp");
+    }
 }
 
 
+
+void drawLine(CanvasPoint from, CanvasPoint to, Colour inputColour, DrawingWindow &window){
+    float xdistance = to.x - from.x;
+    float ydistance = to.y - from.y;
+    //abs() will calculate the absolute value of a number
+    float numberOfSteps = std::max(abs(xdistance),abs(ydistance));
+    //According to the distance to long, and then long distance one by one, you can see ppt.
+    float xStepSize = xdistance/numberOfSteps;
+    float yStepSize = ydistance/numberOfSteps;
+    for (float i= 0.0; i<numberOfSteps;i++){
+        float x =from.x+(i*xStepSize);
+        float y =from.y+(i*yStepSize);
+        uint32_t Colour = (255 << 24) + (inputColour.red << 16) + (inputColour.green << 8) + inputColour.blue;
+        //round(x) is a mathematical function used to round a floating-point number x to the nearest integer
+        window.setPixelColour(round(x), round(y), Colour);
+    }
+}
 
 
 int main(int argc, char *argv[]) {
@@ -105,16 +124,19 @@ int main(int argc, char *argv[]) {
     //for(size_t i=0; i<ThreedResults.size(); i++) std::cout << ThreedResults[i] << " ";
     //std::cout << std::endl;
 
-	DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
-	SDL_Event event;
-	while (true) {
-		// We MUST poll for events - otherwise the window will freeze !
-		if (window.pollForInputEvents(event)) handleEvent(event, window);
-		//draw(window);
-        drawColor(window);
-		// Need to render the frame at the end, or nothing actually gets shown on the screen !
-		window.renderFrame();
-	}
+    DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
+    SDL_Event event;
+    while (true) {
+        CanvasPoint from= CanvasPoint(0,0);
+        CanvasPoint to = CanvasPoint(window.width/2,window.height/2);
+        // We MUST poll for events - otherwise the window will freeze !
+        if (window.pollForInputEvents(event)) handleEvent(event, window);
+        //draw(window);
+        //drawColor(window);
+        drawLine(from,to,Colour{25,234,34},window);
+        // Need to render the frame at the end, or nothing actually gets shown on the screen !
+        window.renderFrame();
+    }
 
 
 }
