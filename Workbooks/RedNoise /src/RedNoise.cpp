@@ -8,6 +8,8 @@
 #define HEIGHT 240
 #include <CanvasPoint.h>
 #include <Colour.h>
+#include <CanvasTriangle.h>
+#include <TextureMap.h>
 using namespace std;
 using namespace glm;
 std::vector<float> interpolateSingleFloats(float from,float to, int numberOfValues){
@@ -35,6 +37,7 @@ std::vector<glm::vec3> interpolateThreeElementValues(glm::vec3 from,glm::vec3 to
     return results;
 
 }
+
 void drawColor(DrawingWindow &window){
     window.clearPixels();
     int Width = static_cast<int>(window.width);
@@ -90,7 +93,7 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 }
 
 
-
+//Week2
 void drawLine(CanvasPoint from, CanvasPoint to, Colour inputColour, DrawingWindow &window){
     float xdistance = to.x - from.x;
     float ydistance = to.y - from.y;
@@ -108,6 +111,96 @@ void drawLine(CanvasPoint from, CanvasPoint to, Colour inputColour, DrawingWindo
     }
 }
 
+//Week2
+void drawTriangle(SDL_Event event ,Colour colour,DrawingWindow &window){
+
+            // Generate random triangle vertices and colors
+            CanvasPoint vertex1(rand() % window.width, rand() % window.height);
+            CanvasPoint vertex2(rand() % window.width, rand() % window.height);
+            CanvasPoint vertex3(rand() % window.width, rand() % window.height);
+
+            // Create the CanvasTriangle object and draw the triangle
+            CanvasTriangle triangle({vertex1, vertex2, vertex3});
+            drawLine(triangle[0], triangle[1], colour, window);
+            drawLine(triangle[1], triangle[2], colour, window);
+            drawLine(triangle[2], triangle[0], colour, window);
+
+}
+
+
+void drawKeyTriangle(SDL_Event event ,Colour colour,DrawingWindow &window) {
+    if (event.type == SDL_KEYDOWN) {
+        if (event.key.keysym.sym == SDLK_u) {
+            drawTriangle(event, colour, window);
+        } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+            window.savePPM("output.ppm");
+            window.saveBMP("output.bmp");
+        }
+    }
+}
+
+//week2
+// Function to draw a filled triangle with specified color and stroked triangle over it
+void drawFilledTriangles(CanvasTriangle triangle, Colour fillColour, Colour LineColour, DrawingWindow &window) {
+    // Sorting vertices by y-coordinate
+    if (triangle[0].y > triangle[1].y) std::swap(triangle[0], triangle[1]);
+    if (triangle[0].y > triangle[2].y) std::swap(triangle[0], triangle[2]);
+    if (triangle[1].y > triangle[2].y) std::swap(triangle[1], triangle[2]);
+
+    // Calculate slopes of the three edges
+    float slope1 = (triangle[1].x - triangle[0].x) / (triangle[1].y - triangle[0].y);
+    float slope2 = (triangle[2].x - triangle[0].x) / (triangle[2].y - triangle[0].y);
+    float slope3 = (triangle[2].x - triangle[1].x) / (triangle[2].y - triangle[1].y);
+
+    // Initialize x coordinates for the three edges
+    float x1 = triangle[0].x;
+    float x2 = triangle[0].x;
+
+    uint32_t Colour = (255 << 24) + (fillColour.red << 16) + (fillColour.green << 8) + fillColour.blue;
+    // Loop through each scanline (row) of the triangle
+    for (float y = triangle[0].y; y <= triangle[1].y; y++) {
+        // Draw a horizontal line between x1 and x2 with fill colour
+        CanvasPoint from(round(x1),y) ;
+        CanvasPoint to (round(x2),y) ;
+        drawLine(from,to,fillColour,window);
+        // Update x coordinates for the three edges
+        x1 += slope1;
+        x2 += slope2;
+    }
+    float x3 = triangle[1].x;
+
+    for (float y = triangle[1].y+1 ; y <= triangle[2].y; y++) {
+        CanvasPoint from(round(x3),round(y)) ;
+        CanvasPoint to (round(x2),round(y)) ;
+        drawLine(from,to,fillColour,window);
+        x3 += slope3;
+        x2 += slope2;
+    }
+    // Draw the stroked triangle (outline)
+    drawLine(triangle[0], triangle[1], LineColour, window);
+    drawLine(triangle[1], triangle[2], LineColour, window);
+    drawLine(triangle[2], triangle[0], LineColour, window);
+}
+
+//week2
+void drawTexturedTriangle(TextureMap textureMap,CanvasTriangle canvasTriangle,DrawingWindow &window ){
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 int main(int argc, char *argv[]) {
     std::vector<float> result;
@@ -121,19 +214,47 @@ int main(int argc, char *argv[]) {
     for (glm::vec3 vec : ThreedResults) {
         std::cout << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")" << std::endl;
     }
-    //for(size_t i=0; i<ThreedResults.size(); i++) std::cout << ThreedResults[i] << " ";
-    //std::cout << std::endl;
 
     DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
     SDL_Event event;
     while (true) {
-        CanvasPoint from= CanvasPoint(0,0);
-        CanvasPoint to = CanvasPoint(window.width/2,window.height/2);
+
         // We MUST poll for events - otherwise the window will freeze !
         if (window.pollForInputEvents(event)) handleEvent(event, window);
         //draw(window);
         //drawColor(window);
-        drawLine(from,to,Colour{25,234,34},window);
+
+        //drawLine
+        drawLine(CanvasPoint(0,0),CanvasPoint(window.width/2,window.height/2),Colour{255,255,255},window);
+        drawLine(CanvasPoint(window.width-1,0),CanvasPoint(window.width/2,window.height/2),Colour{255,255,255},window);
+        drawLine(CanvasPoint(window.width / 2, 0),CanvasPoint(window.width / 2, window.height),Colour{255,255,255},window);
+        drawLine(CanvasPoint(window.width / 3, window.height / 2),CanvasPoint(2 * window.width / 3, window.height / 2),Colour{255,255,255},window);
+
+        Colour randomColour(rand() % 256, rand() % 256, rand() % 256);
+        drawKeyTriangle(event,randomColour,window);
+
+        //filled triangle
+            if (event.type == SDL_KEYDOWN) {
+                if (event.key.keysym.sym == SDLK_f) {
+                    // Generate random triangle vertices and colors
+                    CanvasPoint vertex1(rand() % window.width, rand() % window.height);
+                    CanvasPoint vertex2(rand() % window.width, rand() % window.height);
+                    CanvasPoint vertex3(rand() % window.width, rand() % window.height);
+
+                    // Create the CanvasTriangle object and draw the filled triangle
+                    CanvasTriangle triangle({vertex1, vertex2, vertex3});
+                    drawFilledTriangles(triangle, Colour(rand() % 256, rand() % 256, rand() % 256),
+                                        Colour(255, 255, 255), window);
+                } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+                    window.savePPM("output.ppm");
+                    window.saveBMP("output.bmp");
+                }
+            }
+
+            TextureMap textureMap("texture.ppm");
+
+
+
         // Need to render the frame at the end, or nothing actually gets shown on the screen !
         window.renderFrame();
     }
