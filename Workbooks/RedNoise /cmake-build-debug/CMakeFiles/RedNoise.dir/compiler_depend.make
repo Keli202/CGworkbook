@@ -2870,7 +2870,8 @@ CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o: /Users/niukeli/Desktop/CG/workbook/W
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/glm-0.9.7.2/glm/integer.hpp \
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/glm-0.9.7.2/glm/detail/func_integer.hpp \
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/glm-0.9.7.2/glm/detail/func_integer.inl \
-  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/sdw/Colour.h
+  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/sdw/Colour.h \
+  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/sdw/TextureMap.h
 
 
 /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/RedNoise.cpp:

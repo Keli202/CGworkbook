@@ -156,7 +156,7 @@ void drawFilledTriangles(CanvasTriangle triangle, Colour fillColour, Colour Line
     float x1 = triangle[0].x;
     float x2 = triangle[0].x;
 
-    uint32_t Colour = (255 << 24) + (fillColour.red << 16) + (fillColour.green << 8) + fillColour.blue;
+    //uint32_t Colour = (255 << 24) + (fillColour.red << 16) + (fillColour.green << 8) + fillColour.blue;
     // Loop through each scanline (row) of the triangle
     for (float y = triangle[0].y; y <= triangle[1].y; y++) {
         // Draw a horizontal line between x1 and x2 with fill colour
@@ -183,9 +183,91 @@ void drawFilledTriangles(CanvasTriangle triangle, Colour fillColour, Colour Line
 }
 
 //week2
-void drawTexturedTriangle(TextureMap textureMap,CanvasTriangle canvasTriangle,DrawingWindow &window ){
+void drawSpecialTriangle(CanvasTriangle triangle,Colour colour,DrawingWindow &window){
+    drawLine(triangle[0], triangle[1], colour, window);
+    drawLine(triangle[1], triangle[2], colour, window);
+    drawLine(triangle[2], triangle[0], colour, window);
 
 }
+void drawTexturedTriangle(CanvasTriangle triangle, TextureMap texture, DrawingWindow &window) {
+    // Sort vertices by y-coordinate
+    if (triangle.v0().y > triangle.v1().y) swap(triangle.v0(), triangle.v1());
+    if (triangle.v0().y > triangle.v2().y) swap(triangle.v0(), triangle.v2());
+    if (triangle.v1().y > triangle.v2().y) swap(triangle.v1(), triangle.v2());
+
+    CanvasPoint top = triangle.v0();
+    CanvasPoint middle = triangle.v1();
+    CanvasPoint bottom = triangle.v2();
+
+    // Calculate slopes for the top and bottom edges
+    float slope1 = (middle.x - top.x) / (middle.y - top.y);
+    float slope2 = (bottom.x - top.x) / (bottom.y - top.y);
+
+    float left_x = top.x;
+    float right_x = top.x;
+
+    // First part of triangle (top to middle)
+    for (int y = top.y; y <= middle.y; ++y) {
+        // Calculate the corresponding texturePoints for CanvasPoints
+        float t1 = (y - top.y) / (middle.y - top.y);
+        float t2 = (y - top.y) / (bottom.y - top.y);
+        float texX1 = top.texturePoint.x + (middle.texturePoint.x - top.texturePoint.x) * t1;
+        float texX2 = top.texturePoint.x + (bottom.texturePoint.x - top.texturePoint.x) * t2;
+        float texY1 = top.texturePoint.y + (middle.texturePoint.y - top.texturePoint.y) * t1;
+        float texY2 = top.texturePoint.y + (bottom.texturePoint.y - top.texturePoint.y) * t2;
+
+        // Draw the horizontal line with texture mapping
+        for (int x = round(left_x); x <= round(right_x); ++x) {
+            // Interpolate t based on the current x position
+            float t = (x - left_x) / (right_x - left_x);
+            int texX = texX1 + (texX2 - texX1) * t;
+            int texY = texY1 + (texY2 - texY1) * t;
+            texX = std::max(0, std::min(static_cast<int>(texX), static_cast<int>(texture.width) - 1));
+            texY = std::max(0, std::min(static_cast<int>(texY), static_cast<int>(texture.height) - 1));
+            // Calculate the index to access the texture pixel
+            int index = texY * texture.width + texX;
+            window.setPixelColour(x, y, texture.pixels[index]);
+        }
+
+        left_x += slope1;
+        right_x += slope2;
+    }
+
+    // Initialize left and right x-coordinates for the bottom edge
+    left_x = middle.x;
+    float slope3 = (bottom.x - middle.x) / (bottom.y - middle.y);
+
+    // Second part of triangle (middle to bottom)
+    for (int y = middle.y + 1; y <= bottom.y; ++y) {
+        // Calculate the corresponding texture coordinates for Canvas Points
+        float t1 = (y - middle.y) / (bottom.y - middle.y);
+        float t2 = (y - top.y) / (bottom.y - top.y);
+        float texX1 = middle.texturePoint.x + (bottom.texturePoint.x - middle.texturePoint.x) * t1;
+        float texX2 = top.texturePoint.x + (bottom.texturePoint.x - top.texturePoint.x) * t2;
+        float texY1 = middle.texturePoint.y + (bottom.texturePoint.y - middle.texturePoint.y) * t1;
+        float texY2 = top.texturePoint.y + (bottom.texturePoint.y - top.texturePoint.y) * t2;
+
+        // Draw the horizontal line with texture mapping
+        for (int x = round(left_x); x <= round(right_x); ++x) {
+            // Interpolate t based on the current x position
+            float t = (x - left_x) / (right_x - left_x);
+            int texX = texX1 + (texX2 - texX1) * t;
+            int texY = texY1 + (texY2 - texY1) * t;
+            texX = std::max(0, std::min(static_cast<int>(texX), static_cast<int>(texture.width) - 1));
+            texY = std::max(0, std::min(static_cast<int>(texY), static_cast<int>(texture.height) - 1));
+            // Calculate the index to access the texture pixel
+            int index = texY * texture.width + texX;
+            window.setPixelColour(x, y, texture.pixels[index]);
+        }
+        left_x += slope3;
+        right_x += slope2;
+    }
+    drawSpecialTriangle(triangle,Colour(255,255,255),window);
+}
+
+
+
+
 
 
 
@@ -225,10 +307,10 @@ int main(int argc, char *argv[]) {
         //drawColor(window);
 
         //drawLine
-        drawLine(CanvasPoint(0,0),CanvasPoint(window.width/2,window.height/2),Colour{255,255,255},window);
-        drawLine(CanvasPoint(window.width-1,0),CanvasPoint(window.width/2,window.height/2),Colour{255,255,255},window);
-        drawLine(CanvasPoint(window.width / 2, 0),CanvasPoint(window.width / 2, window.height),Colour{255,255,255},window);
-        drawLine(CanvasPoint(window.width / 3, window.height / 2),CanvasPoint(2 * window.width / 3, window.height / 2),Colour{255,255,255},window);
+        //drawLine(CanvasPoint(0,0),CanvasPoint(window.width/2,window.height/2),Colour{255,255,255},window);
+        //drawLine(CanvasPoint(window.width-1,0),CanvasPoint(window.width/2,window.height/2),Colour{255,255,255},window);
+        //drawLine(CanvasPoint(window.width / 2, 0),CanvasPoint(window.width / 2, window.height),Colour{255,255,255},window);
+        //drawLine(CanvasPoint(window.width / 3, window.height / 2),CanvasPoint(2 * window.width / 3, window.height / 2),Colour{255,255,255},window);
 
         Colour randomColour(rand() % 256, rand() % 256, rand() % 256);
         drawKeyTriangle(event,randomColour,window);
@@ -251,10 +333,22 @@ int main(int argc, char *argv[]) {
                 }
             }
 
-            TextureMap textureMap("texture.ppm");
 
-
-
+        TextureMap texture=TextureMap("../texture.ppm");
+        // Define the vertices of the triangle
+        CanvasPoint p1(160, 10);
+        CanvasPoint p2(300, 230);
+        CanvasPoint p3(10, 150);
+        // Create a textured triangle
+        p1.texturePoint =TexturePoint(195,5);
+        p2.texturePoint =TexturePoint(395,380);
+        p3.texturePoint =TexturePoint(65,330);
+        CanvasTriangle triangle(p1, p2, p3);
+        // Draw the textured triangle
+        drawTexturedTriangle(triangle, texture, window);
+        //drawTexturedTriangle(window, triangle, texture);
+//
+//        if(window.pollForInputEvents(event)) handleEvent(event,window);
         // Need to render the frame at the end, or nothing actually gets shown on the screen !
         window.renderFrame();
     }
