@@ -10,6 +10,7 @@
 #include <Colour.h>
 #include <CanvasTriangle.h>
 #include <TextureMap.h>
+#include <ModelTriangle.h>
 using namespace std;
 using namespace glm;
 std::vector<float> interpolateSingleFloats(float from,float to, int numberOfValues){
@@ -92,7 +93,6 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
     }
 }
 
-
 //Week2
 void drawLine(CanvasPoint from, CanvasPoint to, Colour inputColour, DrawingWindow &window){
     float xdistance = to.x - from.x;
@@ -126,8 +126,6 @@ void drawTriangle(SDL_Event event ,Colour colour,DrawingWindow &window){
             drawLine(triangle[2], triangle[0], colour, window);
 
 }
-
-
 void drawKeyTriangle(SDL_Event event ,Colour colour,DrawingWindow &window) {
     if (event.type == SDL_KEYDOWN) {
         if (event.key.keysym.sym == SDLK_u) {
@@ -189,6 +187,7 @@ void drawSpecialTriangle(CanvasTriangle triangle,Colour colour,DrawingWindow &wi
     drawLine(triangle[2], triangle[0], colour, window);
 
 }
+
 //week2
 void drawTexturedTriangle(CanvasTriangle triangle, TextureMap texture, DrawingWindow &window) {
     CanvasPoint top = triangle.v0();
@@ -268,73 +267,176 @@ void drawTexturedTriangle(CanvasTriangle triangle, TextureMap texture, DrawingWi
     drawSpecialTriangle(triangle,Colour(255,255,255),window);
 }
 
+//week4
+void readOBJColour(const std::string& filename,std::vector<std::pair<std::string, Colour>>& palette) {
+    ifstream file(filename);
+    if (!file.is_open()) {
+        cerr << "Error: Could not open material file " << filename << std::endl;
+        return;
+    }
+    string line;
+    //vector<vec3> vertices;
+    string content;
+    while (getline(file, line)) {
+        if (line.empty()) {
+            continue;
+        }
+        std::vector<std::string> tokens = split(line, ' ');
+        if (tokens[0]=="newmtl"){
+            //content +=line+ '\n';
+            //palette.push_back(std::make_pair(currentMaterial, currentColour));
+            content = tokens[1];
+        }
+        if(tokens[0]=="Kd"){
+            float r, g, b;
+            r = std::stof(tokens[1]) ;
+            g = std::stof(tokens[2]) ;
+            b = std::stof(tokens[3]) ;
+            int red = static_cast<int>(r * 255);
+            int green = static_cast<int>(g * 255);
+            int blue = static_cast<int>(b * 255);
+            palette.emplace_back(content, Colour(red, green, blue));
+        }
+
+    }
+    file.close();
+}
+
+vector<vec3> readOBJ(const std::string& filename, float scale){
+       ifstream file(filename);
+       vector<ModelTriangle> triangles;
+      vector<vec3> vertices;
+
+       if(!file.is_open()){
+           cerr<<"Error: Could not open file "<<filename<<std::endl;
+           return vertices;
+       }
+
+        string line;
+
+   // std::vector<Colour> colours;
+    vector<pair<string, Colour>> palette;
+
+    // Read the MTL file and populate the palette
+    readOBJColour("../cornell-box.mtl",palette);
+    string currentMaterial;
+
+        while(getline(file,line)){
+           if (line.empty()) {
+               continue;
+           }
+           std::vector<std::string> tokens = split(line, ' ');
+           if (tokens[0] == "v") {
+               vec3 vertex;
+               //cout<<tokens.size()<<endl;
+               vertex.x= std::stof(tokens[1]);
+               vertex.y = std::stof(tokens[2]);
+               vertex.z = std::stof(tokens[3]);
+               vertex *= scale;
+               vertices.push_back(vertex);
+               //triangles.push_back(ModelTriangle(triangles.back(vertex.x),vertex.y,vertex.z,Colour{255,255,255}));
+           }
+           if (tokens[0] == "f") {
+               std::vector<std::string> parts = split(line, '/');
+               int v1, v2, v3;
+               v1 = std::stoi(tokens[1]) - 1;
+               v2 = std::stoi(tokens[2]) - 1;
+               v3 = std::stoi(tokens[3]) - 1;
+
+               Colour triangleColour; // Default colour
+               for (const auto& data : palette) {
+                   if (data.first == currentMaterial) {
+                       triangleColour = data.second;
+                       //cout<<currentMaterial<<endl;
+                       break;
+                   }
+               }
+               //cout<<triangleColour<<endl;
+               ModelTriangle triangle(vertices[v1], vertices[v2], vertices[v3], triangleColour);
+               triangles.push_back(triangle);
+//               ModelTriangle triangle(vertices[v1], vertices[v2], vertices[v3],Colour{255,255,255});
+//               triangles.push_back(triangle);
+           }
+           if(tokens[0] == "usemtl"){
+               currentMaterial = tokens[1];
+           }
+       }
+
+       for (const ModelTriangle& triangle : triangles) {
+            std::cout << triangle << std::endl;
+        }
+
+        file.close();
+//return triangles;
+return vertices;
+}
+
+vec2 getCanvasIntersectionPoint(vec3 cameraPosition,vec3 vertexPosition,float focalLength){
+
+    glm::vec3 relativePosition = vertexPosition - cameraPosition;
+    // 计算顶点在图像平面上的投影坐标
+    float u = (focalLength * relativePosition.x / relativePosition.z) + (WIDTH / 2);
+    float v = (-focalLength * relativePosition.y / relativePosition.z) + (HEIGHT / 2);
+
+    //vec2 CanvasPoint(u,v);
+    if (u >= 0 && u < WIDTH && v >= 0 && v < HEIGHT) {
+        // 在可见范围内，返回投影坐标
+        return vec2(u, v);
+    } else {
+        // 不在可见范围内，返回一个特定的坐标或错误标志
+        // 例如，返回一个坐标 (-1, -1) 表示不可见
+        return vec2(-1, -1);
+    }
+    // 返回CanvasPoint坐标
+    //return CanvasPoint;
+}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-int main(int argc, char *argv[]) {
+void week1(){
+    //week1
     std::vector<float> result;
     result = interpolateSingleFloats(2.2, 8.5, 7);
     for(size_t i=0; i<result.size(); i++) std::cout << result[i] << " ";
     std::cout << std::endl;
 
+ //week1
     glm::vec3 from(1.0, 4.0, 9.2);
     glm::vec3 to(4.0, 1.0, 9.8);
     std::vector<glm::vec3> ThreedResults= interpolateThreeElementValues(from,to,4);
     for (glm::vec3 vec : ThreedResults) {
         std::cout << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")" << std::endl;
     }
+}
+void week3(SDL_Event event, DrawingWindow &window){
+    //draw(window);
+    //drawColor(window);
 
-    DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
-    SDL_Event event;
-    while (true) {
+    // //drawLine
+    //drawLine(CanvasPoint(0,0),CanvasPoint(window.width/2,window.height/2),Colour{255,255,255},window);
+    //drawLine(CanvasPoint(window.width-1,0),CanvasPoint(window.width/2,window.height/2),Colour{255,255,255},window);
+    //drawLine(CanvasPoint(window.width / 2, 0),CanvasPoint(window.width / 2, window.height),Colour{255,255,255},window);
+    //drawLine(CanvasPoint(window.width / 3, window.height / 2),CanvasPoint(2 * window.width / 3, window.height / 2),Colour{255,255,255},window);
 
-        // We MUST poll for events - otherwise the window will freeze !
-        if (window.pollForInputEvents(event)) handleEvent(event, window);
-        //draw(window);
-        //drawColor(window);
+    Colour randomColour(rand() % 256, rand() % 256, rand() % 256);
+    drawKeyTriangle(event,randomColour,window);
+//
+    //filled triangle
+    if (event.type == SDL_KEYDOWN) {
+        if (event.key.keysym.sym == SDLK_f) {
+            // Generate random triangle vertices and colors
+            CanvasPoint vertex1(rand() % window.width, rand() % window.height);
+            CanvasPoint vertex2(rand() % window.width, rand() % window.height);
+            CanvasPoint vertex3(rand() % window.width, rand() % window.height);
 
-        //drawLine
-        //drawLine(CanvasPoint(0,0),CanvasPoint(window.width/2,window.height/2),Colour{255,255,255},window);
-        //drawLine(CanvasPoint(window.width-1,0),CanvasPoint(window.width/2,window.height/2),Colour{255,255,255},window);
-        //drawLine(CanvasPoint(window.width / 2, 0),CanvasPoint(window.width / 2, window.height),Colour{255,255,255},window);
-        //drawLine(CanvasPoint(window.width / 3, window.height / 2),CanvasPoint(2 * window.width / 3, window.height / 2),Colour{255,255,255},window);
-
-        Colour randomColour(rand() % 256, rand() % 256, rand() % 256);
-        drawKeyTriangle(event,randomColour,window);
-
-        //filled triangle
-            if (event.type == SDL_KEYDOWN) {
-                if (event.key.keysym.sym == SDLK_f) {
-                    // Generate random triangle vertices and colors
-                    CanvasPoint vertex1(rand() % window.width, rand() % window.height);
-                    CanvasPoint vertex2(rand() % window.width, rand() % window.height);
-                    CanvasPoint vertex3(rand() % window.width, rand() % window.height);
-
-                    // Create the CanvasTriangle object and draw the filled triangle
-                    CanvasTriangle triangle({vertex1, vertex2, vertex3});
-                    drawFilledTriangles(triangle, Colour(rand() % 256, rand() % 256, rand() % 256),
-                                        Colour(255, 255, 255), window);
-                } else if (event.type == SDL_MOUSEBUTTONDOWN) {
-                    window.savePPM("output.ppm");
-                    window.saveBMP("output.bmp");
-                }
-            }
+            // Create the CanvasTriangle object and draw the filled triangle
+            CanvasTriangle triangle({vertex1, vertex2, vertex3});
+            drawFilledTriangles(triangle, Colour(rand() % 256, rand() % 256, rand() % 256),
+                                Colour(255, 255, 255), window);
+        } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+            window.savePPM("output.ppm");
+            window.saveBMP("output.bmp");
+        }
+    }
 
         //fill textureMap
         TextureMap texture=TextureMap("../texture.ppm");
@@ -350,8 +452,61 @@ int main(int argc, char *argv[]) {
         // Draw the textured triangle
         drawTexturedTriangle(triangle, texture, window);
 
+}
 
-        //if(window.pollForInputEvents(event)) handleEvent(event,window);
+
+int main(int argc, char *argv[]) {
+   // week1();
+
+    //loadOBJ("cornell-box.obj", 0.35); // 使用0.35的缩放因子加载OBJ文件
+
+
+
+//    for (const glm::vec3& vertex : modelVertices) {
+//        std::cout << "Vertex: (" << vertex.x << ", " << vertex.y << ", " << vertex.z << ")" << std::endl;
+//    }
+
+    // 输出投影点的坐标
+    //std::cout << "Canvas Point: (" << canvasPoint.x << ", " << canvasPoint.y << ")" << std::endl;
+
+    DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
+    SDL_Event event;
+    while (true) {
+        // We MUST poll for events - otherwise the window will freeze !
+        if (window.pollForInputEvents(event)) handleEvent(event, window);
+        //week3(event,window);
+
+        glm::vec3 cameraPosition(0.0f, 0.0f, 4.0f);
+        float focalLength = 2.0f;
+        // Image plane scaling factor
+        float scalingFactor = 240.0f;
+        // Load the vertex data for the Cornell Box model
+        std::vector<glm::vec3> modelVertices=readOBJ("../cornell-box.obj", 0.35);
+
+        for (const vec3 vertexPosition : modelVertices) {
+
+            // 使用 getCanvasIntersectionPoint 函数计算投影点
+            glm::vec2 canvasPoint = getCanvasIntersectionPoint(cameraPosition, vertexPosition, focalLength);
+
+            // 对投影点进行缩放以适应绘图窗口
+            glm::vec2 scaledPoint = scalingFactor * canvasPoint;
+
+            // 绘制白色像素点
+            uint32_t colour = (255 << 24) + (255 << 16) + (255 << 8) + 255;
+            window.setPixelColour(static_cast<int>(scaledPoint.x), static_cast<int>(scaledPoint.y), colour);
+            //window.setPixelColour(static_cast<int>(canvasPoint.x), static_cast<int>(canvasPoint.y), colour);
+        }
+//        glm::vec3 vertexPosition(1.0f, 1.0f, 3.0f);
+//        // 调用getCanvasIntersectionPoint函数来计算投影点
+//        glm::vec2 canvasPoint = getCanvasIntersectionPoint(cameraPosition, vertexPosition, focalLength);
+//        //glm::vec2 scaledPoint = scalingFactor * canvasPoint;
+//
+//            // 绘制白色像素点
+//            uint32_t colour = (255 << 24) + (255 << 16) + (255 << 8) + 255;
+//            window.setPixelColour(static_cast<int>(canvasPoint.x), static_cast<int>(canvasPoint.y), colour);
+        if(window.pollForInputEvents(event)) handleEvent(event,window);
+
+
         // Need to render the frame at the end, or nothing actually gets shown on the screen !
         window.renderFrame();
     }
