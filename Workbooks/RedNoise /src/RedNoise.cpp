@@ -156,10 +156,10 @@ void drawFilledTriangles(CanvasTriangle triangle, Colour fillColour, Colour Line
 
     //uint32_t Colour = (255 << 24) + (fillColour.red << 16) + (fillColour.green << 8) + fillColour.blue;
     // Loop through each scanline (row) of the triangle
-    for (float y = triangle[0].y; y <= triangle[1].y; y++) {
+    for (float y = triangle[0].y; y < triangle[1].y; y++) {
         // Draw a horizontal line between x1 and x2 with fill colour
-        CanvasPoint from(round(x1),y) ;
-        CanvasPoint to (round(x2),y) ;
+        CanvasPoint from(round(x1),round(y)) ;
+        CanvasPoint to (round(x2),round(y)) ;
         drawLine(from,to,fillColour,window);
         // Update x coordinates for the three edges
         x1 += slope1;
@@ -167,7 +167,7 @@ void drawFilledTriangles(CanvasTriangle triangle, Colour fillColour, Colour Line
     }
     float x3 = triangle[1].x;
 
-    for (float y = triangle[1].y+1 ; y <= triangle[2].y; y++) {
+    for (float y = triangle[1].y ; y <= triangle[2].y; y++) {
         CanvasPoint from(round(x3),round(y)) ;
         CanvasPoint to (round(x2),round(y)) ;
         drawLine(from,to,fillColour,window);
@@ -302,14 +302,14 @@ void readOBJColour(const std::string& filename,std::vector<std::pair<std::string
     file.close();
 }
 
-vector<vec3> readOBJ(const std::string& filename, float scale){
+vector<ModelTriangle> readOBJ(const std::string& filename, float scale){
        ifstream file(filename);
        vector<ModelTriangle> triangles;
       vector<vec3> vertices;
 
        if(!file.is_open()){
            cerr<<"Error: Could not open file "<<filename<<std::endl;
-           return vertices;
+           return triangles;
        }
 
         string line;
@@ -334,7 +334,6 @@ vector<vec3> readOBJ(const std::string& filename, float scale){
                vertex.z = std::stof(tokens[3]);
                vertex *= scale;
                vertices.push_back(vertex);
-               //triangles.push_back(ModelTriangle(triangles.back(vertex.x),vertex.y,vertex.z,Colour{255,255,255}));
            }
            if (tokens[0] == "f") {
                std::vector<std::string> parts = split(line, '/');
@@ -367,16 +366,16 @@ vector<vec3> readOBJ(const std::string& filename, float scale){
         }
 
         file.close();
-//return triangles;
-return vertices;
+return triangles;
+//return vertices;
 }
 
-vec2 getCanvasIntersectionPoint(vec3 cameraPosition,vec3 vertexPosition,float focalLength){
+vec2 getCanvasIntersectionPoint(vec3 cameraPosition,vec3 vertexPosition,float focalLength, float scalingFactor){
 
     glm::vec3 relativePosition = vertexPosition - cameraPosition;
     // 计算顶点在图像平面上的投影坐标
-    float u = (focalLength * relativePosition.x / relativePosition.z) + (WIDTH / 2);
-    float v = (-focalLength * relativePosition.y / relativePosition.z) + (HEIGHT / 2);
+    float u = (-focalLength * relativePosition.x / relativePosition.z)*scalingFactor + (WIDTH / 2);
+    float v = (focalLength * relativePosition.y / relativePosition.z)*scalingFactor + (HEIGHT / 2);
 
     //vec2 CanvasPoint(u,v);
     if (u >= 0 && u < WIDTH && v >= 0 && v < HEIGHT) {
@@ -453,6 +452,30 @@ void week3(SDL_Event event, DrawingWindow &window){
         drawTexturedTriangle(triangle, texture, window);
 
 }
+void week4(std::vector<ModelTriangle> modelTriangles,DrawingWindow &window){
+    window.clearPixels();
+    glm::vec3 cameraPosition(0.0f, 0.0f, 4.0f);
+    float focalLength = 2.0f;
+    // Image plane scaling factor
+    float scalingFactor = 151.0f;
+    // Load the vertex data for the Cornell Box model
+
+    CanvasTriangle canvasTriangle;
+    for(auto & modelTriangle : modelTriangles){
+        for (int i=0;i<3;i++) {
+            vec3 vertexPosition =modelTriangle.vertices[i];
+            glm::vec2 canvasPoint = getCanvasIntersectionPoint(cameraPosition, vertexPosition, focalLength,scalingFactor);
+            // draw white pixels
+//                uint32_t colour = (255 << 24) + (255 << 16) + (255 << 8) + 255;
+//                window.setPixelColour(static_cast<int>(canvasPoint.x), static_cast<int>(canvasPoint.y), colour);
+            CanvasPoint p={canvasPoint.x,canvasPoint.y};
+            canvasTriangle.vertices[i]=p;
+
+        }
+        drawSpecialTriangle(canvasTriangle,modelTriangle.colour,window);
+        drawFilledTriangles(canvasTriangle,modelTriangle.colour,modelTriangle.colour,window);
+    }
+}
 
 
 int main(int argc, char *argv[]) {
@@ -475,38 +498,12 @@ int main(int argc, char *argv[]) {
         // We MUST poll for events - otherwise the window will freeze !
         if (window.pollForInputEvents(event)) handleEvent(event, window);
         //week3(event,window);
+        std::vector<ModelTriangle> modelTriangles=readOBJ("../cornell-box.obj", 0.35);
+        week4(modelTriangles,window);
 
-        glm::vec3 cameraPosition(0.0f, 0.0f, 4.0f);
-        float focalLength = 2.0f;
-        // Image plane scaling factor
-        float scalingFactor = 240.0f;
-        // Load the vertex data for the Cornell Box model
-        std::vector<glm::vec3> modelVertices=readOBJ("../cornell-box.obj", 0.35);
 
-        for (const vec3 vertexPosition : modelVertices) {
 
-            // 使用 getCanvasIntersectionPoint 函数计算投影点
-            glm::vec2 canvasPoint = getCanvasIntersectionPoint(cameraPosition, vertexPosition, focalLength);
-
-            // 对投影点进行缩放以适应绘图窗口
-            glm::vec2 scaledPoint = scalingFactor * canvasPoint;
-
-            // 绘制白色像素点
-            uint32_t colour = (255 << 24) + (255 << 16) + (255 << 8) + 255;
-            window.setPixelColour(static_cast<int>(scaledPoint.x), static_cast<int>(scaledPoint.y), colour);
-            //window.setPixelColour(static_cast<int>(canvasPoint.x), static_cast<int>(canvasPoint.y), colour);
-        }
-//        glm::vec3 vertexPosition(1.0f, 1.0f, 3.0f);
-//        // 调用getCanvasIntersectionPoint函数来计算投影点
-//        glm::vec2 canvasPoint = getCanvasIntersectionPoint(cameraPosition, vertexPosition, focalLength);
-//        //glm::vec2 scaledPoint = scalingFactor * canvasPoint;
-//
-//            // 绘制白色像素点
-//            uint32_t colour = (255 << 24) + (255 << 16) + (255 << 8) + 255;
-//            window.setPixelColour(static_cast<int>(canvasPoint.x), static_cast<int>(canvasPoint.y), colour);
         if(window.pollForInputEvents(event)) handleEvent(event,window);
-
-
         // Need to render the frame at the end, or nothing actually gets shown on the screen !
         window.renderFrame();
     }
