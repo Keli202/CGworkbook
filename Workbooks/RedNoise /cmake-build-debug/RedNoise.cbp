@@ -142,7 +142,16 @@
 		<Unit filename="/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise /libs/sdw/Utils.h">
 			<Option target="RedNoise"/>
 		</Unit>
+		<Unit filename="/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise /src/Camera.h">
+			<Option target="RedNoise"/>
+		</Unit>
 		<Unit filename="/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise /src/RedNoise.cpp">
+			<Option target="RedNoise"/>
+		</Unit>
+		<Unit filename="/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise /src/drawRender.h">
+			<Option target="RedNoise"/>
+		</Unit>
+		<Unit filename="/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise /src/drawTriangle.h">
 			<Option target="RedNoise"/>
 		</Unit>
 		<Unit filename="/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise /CMakeLists.txt">

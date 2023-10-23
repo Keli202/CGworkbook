@@ -2872,8 +2872,13 @@ CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o: /Users/niukeli/Desktop/CG/workbook/W
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/glm-0.9.7.2/glm/detail/func_integer.inl \
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/sdw/Colour.h \
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/sdw/TextureMap.h \
-  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/sdw/ModelTriangle.h
+  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/sdw/ModelTriangle.h \
+  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/drawRender.h \
+  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/drawTriangle.h \
+  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/Camera.h
 
+
+/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/drawRender.h:
 
 /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/RedNoise.cpp:
 
@@ -3258,6 +3263,8 @@ CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o: /Users/niukeli/Desktop/CG/workbook/W
 /Library/Developer/CommandLineTools/usr/lib/clang/12.0.5/include/stddef.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk/usr/include/xlocale/_wctype.h:
+
+/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/Camera.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk/usr/include/sys/signal.h:
 
@@ -3784,6 +3791,8 @@ CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o: /Users/niukeli/Desktop/CG/workbook/W
 /Library/Developer/CommandLineTools/usr/lib/clang/12.0.5/include/movdirintrin.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk/usr/include/machine/limits.h:
+
+/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/drawTriangle.h:
 
 /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/glm-0.9.7.2/glm/glm.hpp:
 
