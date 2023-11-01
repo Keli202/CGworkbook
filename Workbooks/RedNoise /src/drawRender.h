@@ -48,11 +48,16 @@ vec3 getCanvasIntersectionPoint(vec3 cameraPosition,vec3 vertexPosition,float fo
     }
 
 }
+float interpolate(float from, float to, float factor) {
+    return from + (to - from) * factor;
+}
 
 void drawRenderLine(CanvasPoint from, CanvasPoint to, Colour inputColour, DrawingWindow &window,vector<vector<float>>& depthBuffer){
     float xdistance = to.x - from.x;
     float ydistance = to.y - from.y;
     float zdistance = to.depth-from.depth;
+    //float depthFrom = 1.0 / from.depth;
+    //float depthTo = 1.0 / to.depth;
     //abs() will calculate the absolute value of a number
     //float numberOfSteps = std::max(std::max(abs(xdistance),abs(ydistance)),abs(zdistance));
    float numberOfSteps =std::max(abs(xdistance),abs(ydistance));
@@ -64,24 +69,64 @@ void drawRenderLine(CanvasPoint from, CanvasPoint to, Colour inputColour, Drawin
         float x =from.x+(i*xStepSize);
         float y =from.y+(i*yStepSize);
         float z =from.depth+(i*zStepSize);
-        //cout<<"z:"<<from.depth<<endl;
-        //float z=from.depth;
-        cout<<"db0:"<<depthBuffer[round(x)][round(y)]<<endl;
-        //cout<<"db0JJJJ:"<<depthBuffer[x][y]<<endl;
-        cout<<"z0:"<<z<<endl;
-        //if (fabs(z) < 1e-6) continue;
-        //if (-1.0f/z>depthBuffer[round(x)][round(y)]){
             if (z<depthBuffer[round(x)][round(y)]){
            // cout<<"dbHHHHH:"<<depthBuffer[round(x)][round(y)]<<endl;
             //cout<<"zHHHH:"<<z<<endl;
             uint32_t Colour = (255 << 24) + (inputColour.red << 16) + (inputColour.green << 8) + inputColour.blue;
-            //round(x) is a mathematical function used to round a floating-point number x to the nearest integer
             window.setPixelColour(round(x), round(y), Colour);
             depthBuffer[round(x)][round(y)]=z;
             // cout<<"db2:"<<depthBuffer[round(x)][round(y)]<<endl;
             // cout<<"z2:"<<z<<endl;
         }
     }
+}
+
+void drawRenderTriangles(CanvasTriangle triangle, Colour fillColour, Colour LineColour, DrawingWindow &window,vector<vector<float>>& depthBuffer) {
+    // Sort the vertices by y-coordinate
+    if (triangle[0].y > triangle[1].y) std::swap(triangle[0], triangle[1]);
+    if (triangle[0].y > triangle[2].y) std::swap(triangle[0], triangle[2]);
+    if (triangle[1].y > triangle[2].y) std::swap(triangle[1], triangle[2]);
+
+    CanvasPoint v0 = triangle[0];
+    CanvasPoint v1 = triangle[1];
+    CanvasPoint v2 = triangle[2];
+
+    // Compute bounding box of the triangle
+    int minX = std::min({v0.x, v1.x, v2.x});
+    int maxX = std::max({v0.x, v1.x, v2.x});
+    int minY = std::min({v0.y, v1.y, v2.y});
+    int maxY = std::max({v0.y, v1.y, v2.y});
+
+    // Iterate over the bounding box
+    for (int x = minX; x <= maxX; x++) {
+        for (int y = minY; y <= maxY; y++) {
+            if (x < 0 || x >= window.width || y < 0 || y >= window.height) {
+                continue;
+            }
+            // Compute Barycentric coordinates
+            float lambda0 = ((v1.y - v2.y) * (x - v2.x) + (v2.x - v1.x) * (y - v2.y)) /
+                            ((v1.y - v2.y) * (v0.x - v2.x) + (v2.x - v1.x) * (v0.y - v2.y));
+            float lambda1 = ((v2.y - v0.y) * (x - v2.x) + (v0.x - v2.x) * (y - v2.y)) /
+                            ((v1.y - v2.y) * (v0.x - v2.x) + (v2.x - v1.x) * (v0.y - v2.y));
+            float lambda2 = 1.0f - lambda0 - lambda1;
+
+            // Check if the point is inside the triangle
+            if (lambda0 >= 0 && lambda1 >= 0 && lambda2 >= 0) {
+                // Interpolate depth
+                float depth = lambda0 * v0.depth + lambda1 * v1.depth + lambda2 * v2.depth;
+                // Depth test
+                if (depth < depthBuffer[x][y]) {
+                    depthBuffer[x][y] = depth;
+                    uint32_t colour = (255 << 24) + (fillColour.red << 16) + (fillColour.green << 8) + fillColour.blue;
+                    window.setPixelColour(x, y, colour);
+                }
+            }
+        }
+    }
+
+    drawRenderLine(v0, v1, LineColour, window, depthBuffer);
+    drawRenderLine(v1, v2, LineColour, window, depthBuffer);
+    drawRenderLine(v2, v0, LineColour, window, depthBuffer);
 }
 
 
@@ -99,8 +144,6 @@ void drawRenderLine(CanvasPoint from, CanvasPoint to, Colour inputColour, Drawin
 //
 //    float depthSlope1 = (middle.depth - top.depth) / (middle.y - top.y);
 //    float depthSlope2 = (bottom.depth - top.depth) / (bottom.y - top.y);
-//
-//
 //
 //    float leftX = top.x;
 //    float rightX = top.x;
@@ -122,6 +165,8 @@ void drawRenderLine(CanvasPoint from, CanvasPoint to, Colour inputColour, Drawin
 //    float slope3 = (bottom.x - middle.x) / (bottom.y - middle.y);
 //    float depthSlope3 = (bottom.depth - middle.depth)/(bottom.y - middle.y);
 //    for (float y = middle.y ; y <=bottom.y; y++) {
+//        //leftDepth = leftDepth2 + (y - middle.y) * depthSlope3;
+//        //rightDepth = rightDepth2 + (y - middle.y) * depthSlope2;
 //        CanvasPoint from(round(leftX2),round(y),round(leftDepth2)) ;
 //        CanvasPoint to (round(rightX),round(y),round(rightDepth)) ;
 //        drawRenderLine(from,to,fillColour,window,depthBuffer);
@@ -136,81 +181,99 @@ void drawRenderLine(CanvasPoint from, CanvasPoint to, Colour inputColour, Drawin
 //    drawRenderLine(bottom, top, LineColour, window,depthBuffer);
 //
 //}
-void drawRenderTriangles(CanvasTriangle triangle, Colour fillColour, Colour LineColour, DrawingWindow &window, vector<vector<float>>& depthBuffer) {
-
-    if (triangle[0].y > triangle[1].y) std::swap(triangle[0], triangle[1]);
-    if (triangle[0].y > triangle[2].y) std::swap(triangle[0], triangle[2]);
-    if (triangle[1].y > triangle[2].y) std::swap(triangle[1], triangle[2]);
-
-    float invSlope1 = (triangle[1].x - triangle[0].x) / (triangle[1].y - triangle[0].y);
-    float invSlope2 = (triangle[2].x - triangle[0].x) / (triangle[2].y - triangle[0].y);
-    float depthSlope1 = (triangle[1].depth - triangle[0].depth) / (triangle[1].y - triangle[0].y);
-    float depthSlope2 = (triangle[2].depth - triangle[0].depth) / (triangle[2].y - triangle[0].y);
-
-    float x1 = triangle[0].x;
-    float x2 = triangle[0].x;
-    float depth1 = triangle[0].depth;
-    float depth2 = triangle[0].depth;
-        for (float y = triangle[0].y; y < triangle[1].y; y++) {
-            float startX = std::min(x1, x2);
-            float endX = std::max(x1, x2);
-            float startDepth = std::min(depth1, depth2);
-
-            for (float x = round(startX); x <= round(endX); x++) {
-                if (x >= 0 && x < window.width && y >= 0 && y < window.height) {
-
-                    //if (-1.0f / startDepth > depthBuffer[round(x)][round(y)]) {
-                        if (startDepth <depthBuffer[round(x)][round(y)]) {
-                        depthBuffer[round(x)][round(y)] = startDepth;
-                        uint32_t Colour =
-                                (255 << 24) + (fillColour.red << 16) + (fillColour.green << 8) + fillColour.blue;
-                       // if (isTriangleInsideViewFrustrum(triangle)) {
-                        window.setPixelColour(round(x), round(y), Colour);
-                        //  }else{break;}
-                    }
-                }
-            }
-            x1 += invSlope1;
-            x2 += invSlope2;
-            depth1 += depthSlope1;
-            depth2 += depthSlope2;
-        }
-
-        float invSlope3 = (triangle[2].x - triangle[1].x) / (triangle[2].y - triangle[1].y);
-        float depthSlope3 = (triangle[2].depth - triangle[1].depth) / (triangle[2].y - triangle[1].y);
-
-        x1 = triangle[1].x;
-        depth1 = triangle[1].depth;
-
-        for (float y = triangle[1].y; y <= triangle[2].y; y++) {
-            float startX = std::min(x1, x2);
-            float endX = std::max(x1, x2);
-            float startDepth = std::min(depth1, depth2);
-
-            for (float x = round(startX); x <= round(endX); x++) {
-                if (x >= 0 && x < window.width && y >= 0 && y < window.height) {
-
-                    //if (-1.0f / startDepth > depthBuffer[round(x)][round(y)]) {
-                        if ( startDepth < depthBuffer[round(x)][round(y)]) {
-                        depthBuffer[round(x)][round(y)] =  startDepth;
-                        uint32_t Colour =(255 << 24) + (fillColour.red << 16) + (fillColour.green << 8) + fillColour.blue;
-                       // if (isTriangleInsideViewFrustrum(triangle)) {
-                        window.setPixelColour(round(x), round(y), Colour);
-                       //       }else{break;}
-                    }
-                }
-            }
-            x1 += invSlope3;
-            x2 += invSlope2;
-            depth1 += depthSlope3;
-            depth2 += depthSlope2;
-        }
 
 
-    drawRenderLine(triangle[0], triangle[1], LineColour, window, depthBuffer);
-    drawRenderLine(triangle[1], triangle[2], LineColour, window, depthBuffer);
-    drawRenderLine(triangle[2], triangle[0], LineColour, window, depthBuffer);
-}
+//void drawRenderTriangles(CanvasTriangle triangle, Colour fillColour, Colour LineColour, DrawingWindow &window, vector<vector<float>>& depthBuffer) {
+//
+//    if (triangle[0].y > triangle[1].y) std::swap(triangle[0], triangle[1]);
+//    if (triangle[0].y > triangle[2].y) std::swap(triangle[0], triangle[2]);
+//    if (triangle[1].y > triangle[2].y) std::swap(triangle[1], triangle[2]);
+//
+//    float invSlope1 = (triangle[1].x - triangle[0].x) / (triangle[1].y - triangle[0].y);
+//    float invSlope2 = (triangle[2].x - triangle[0].x) / (triangle[2].y - triangle[0].y);
+//    float depthSlope1 = (triangle[1].depth - triangle[0].depth) / (triangle[1].y - triangle[0].y);
+//    float depthSlope2 = (triangle[2].depth - triangle[0].depth) / (triangle[2].y - triangle[0].y);
+//
+//    float x1 = triangle[0].x;
+//    float x2 = triangle[0].x;
+//    float depth1 = triangle[0].depth;
+//    float depth2 = triangle[0].depth;
+//        for (float y = triangle[0].y; y < triangle[1].y; y++) {
+//            float startX = std::min(x1, x2);
+//            float endX = std::max(x1, x2);
+//            float startDepth = std::min(depth1, depth2);
+//            float depthFrom = depth1;
+//            float depthTo =  depth2;
+//            for (float x = round(startX); x <= round(endX); x++) {
+//                if (x >= 0 && x < window.width && y >= 0 && y < window.height) {
+//                    float t = abs((x - startX) / (endX - startX));
+//                    if (endX == startX) {
+//                        t = 0;
+//                    } else {
+//                        t = clamp(t, 0.0f, 1.0f);
+//                    }
+//                    //cout<<"t1:"<<t<<endl;
+//                    float currentDepth = interpolate(depthFrom, depthTo, t);
+//                    //if (-1.0f / startDepth > depthBuffer[round(x)][round(y)]) {
+//                        if (currentDepth <depthBuffer[round(x)][round(y)]) {
+//                        depthBuffer[round(x)][round(y)] = currentDepth;
+//                        uint32_t Colour =
+//                                (255 << 24) + (fillColour.red << 16) + (fillColour.green << 8) + fillColour.blue;
+//                       // if (isTriangleInsideViewFrustrum(triangle)) {
+//                        window.setPixelColour(round(x), round(y), Colour);
+//                        //  }else{break;}
+//                    }
+//                }
+//            }
+//            x1 += invSlope1;
+//            x2 += invSlope2;
+//            depth1 += depthSlope1;
+//            depth2 += depthSlope2;
+//        }
+//
+//        float invSlope3 = (triangle[2].x - triangle[1].x) / (triangle[2].y - triangle[1].y);
+//        float depthSlope3 = (triangle[2].depth - triangle[1].depth) / (triangle[2].y - triangle[1].y);
+//
+//        x1 = triangle[1].x;
+//        depth1 = triangle[1].depth;
+//
+//        for (float y = triangle[1].y; y <= triangle[2].y; y++) {
+//            float startX = std::min(x1, x2);
+//            float endX = std::max(x1, x2);
+//            float startDepth = std::min(depth1, depth2);
+//            float depthFrom =  depth1;
+//            float depthTo =  depth2;
+//            for (float x = round(startX); x <= round(endX); x++) {
+//                if (x >= 0 && x < window.width && y >= 0 && y < window.height) {
+//                    float t = abs((x - startX) / (endX - startX));
+//                    if (endX == startX) {
+//                        t = 0;
+//                    } else {
+//                        t = clamp(t, 0.0f, 1.0f);
+//                    }
+//                   // cout<<"t2:"<<t<<endl;
+//                    float currentDepth = interpolate(depthFrom, depthTo, t);
+//                    //if (-1.0f / startDepth > depthBuffer[round(x)][round(y)]) {
+//                        if ( currentDepth < depthBuffer[round(x)][round(y)]) {
+//                        depthBuffer[round(x)][round(y)] =  currentDepth;
+//                        uint32_t Colour =(255 << 24) + (fillColour.red << 16) + (fillColour.green << 8) + fillColour.blue;
+//                       // if (isTriangleInsideViewFrustrum(triangle)) {
+//                        window.setPixelColour(round(x), round(y), Colour);
+//                       //       }else{break;}
+//                    }
+//                }
+//            }
+//            x1 += invSlope3;
+//            x2 += invSlope2;
+//            depth1 += depthSlope3;
+//            depth2 += depthSlope2;
+//        }
+//
+//
+//    drawRenderLine(triangle[0], triangle[1], LineColour, window, depthBuffer);
+//    drawRenderLine(triangle[1], triangle[2], LineColour, window, depthBuffer);
+//    drawRenderLine(triangle[2], triangle[0], LineColour, window, depthBuffer);
+//}
 
 
 
