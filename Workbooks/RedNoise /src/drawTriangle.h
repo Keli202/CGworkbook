@@ -7,8 +7,6 @@
 #include <fstream>
 #include <vector>
 #include <glm/glm.hpp>
-#define WIDTH 320
-#define HEIGHT 240
 #include <CanvasPoint.h>
 #include <Colour.h>
 #include <CanvasTriangle.h>
@@ -193,3 +191,54 @@ void drawTexturedTriangle(CanvasTriangle triangle, TextureMap texture, DrawingWi
     }
     drawSpecialTriangle(triangle,Colour(255,255,255),window);
 }
+
+
+void week3(SDL_Event event, DrawingWindow &window){
+    //draw(window);
+    //drawColor(window);
+
+    // //drawLine
+    //drawLine(CanvasPoint(0,0),CanvasPoint(window.width/2,window.height/2),Colour{255,255,255},window);
+    //drawLine(CanvasPoint(window.width-1,0),CanvasPoint(window.width/2,window.height/2),Colour{255,255,255},window);
+    //drawLine(CanvasPoint(window.width / 2, 0),CanvasPoint(window.width / 2, window.height),Colour{255,255,255},window);
+    //drawLine(CanvasPoint(window.width / 3, window.height / 2),CanvasPoint(2 * window.width / 3, window.height / 2),Colour{255,255,255},window);
+
+    Colour randomColour(rand() % 256, rand() % 256, rand() % 256);
+    drawKeyTriangle(event,randomColour,window);
+//
+    //filled triangle
+    if (event.type == SDL_KEYDOWN) {
+        if (event.key.keysym.sym == SDLK_f) {
+            // Generate random triangle vertices and colors
+            CanvasPoint vertex1(rand() % window.width, rand() % window.height);
+            CanvasPoint vertex2(rand() % window.width, rand() % window.height);
+            CanvasPoint vertex3(rand() % window.width, rand() % window.height);
+
+            // Create the CanvasTriangle object and draw the filled triangle
+            CanvasTriangle triangle({vertex1, vertex2, vertex3});
+            drawFilledTriangles(triangle, Colour(rand() % 256, rand() % 256, rand() % 256),
+                                Colour(255, 255, 255), window);
+        } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+            window.savePPM("output.ppm");
+            window.saveBMP("output.bmp");
+        }
+    }
+
+    //fill textureMap
+    TextureMap texture=TextureMap("../texture.ppm");
+    // Define the vertices of the triangle
+    CanvasPoint p1(160, 10);
+    CanvasPoint p2(300, 230);
+    CanvasPoint p3(10, 150);
+    // Create a textured triangle
+    p1.texturePoint =TexturePoint(195,5);
+    p2.texturePoint =TexturePoint(395,380);
+    p3.texturePoint =TexturePoint(65,330);
+    CanvasTriangle triangle(p1, p2, p3);
+    // Draw the textured triangle
+    drawTexturedTriangle(triangle, texture, window);
+
+}
+
+
+

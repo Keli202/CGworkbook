@@ -39,6 +39,8 @@ add_executable(RedNoise
         src/drawRender.h
         src/drawTriangle.h
         src/Camera.h
+        src/draw.h
+        src/readOBJ.h
 )
 
 if (MSVC)

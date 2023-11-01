@@ -2875,8 +2875,12 @@ CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o: /Users/niukeli/Desktop/CG/workbook/W
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/sdw/ModelTriangle.h \
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/drawRender.h \
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/drawTriangle.h \
-  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/Camera.h
+  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/Camera.h \
+  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/draw.h \
+  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/readOBJ.h
 
+
+/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/readOBJ.h:
 
 /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/drawRender.h:
 
@@ -3171,6 +3175,8 @@ CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o: /Users/niukeli/Desktop/CG/workbook/W
 /usr/local/Cellar/sdl2/2.28.3/include/SDL2/SDL_power.h:
 
 /Library/Developer/CommandLineTools/usr/lib/clang/12.0.5/include/inttypes.h:
+
+/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/draw.h:
 
 /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/glm-0.9.7.2/glm/vec3.hpp:
 

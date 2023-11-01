@@ -11,8 +11,7 @@
 #include <fstream>
 #include <vector>
 #include <glm/glm.hpp>
-#define WIDTH 320
-#define HEIGHT 240
+
 #include <CanvasPoint.h>
 #include <Colour.h>
 #include <CanvasTriangle.h>
@@ -22,6 +21,33 @@
 using namespace std;
 using namespace glm;
 //std::vector<std::vector<float>> depthBuffer(WIDTH, std::vector<float>(HEIGHT, (std::numeric_limits<float>::infinity())));
+bool isTriangleInsideViewFrustrum(const CanvasTriangle &triangle) {
+    for(int i = 0; i < 3; i++) {
+        if(triangle.vertices[i].x < 0 || triangle.vertices[i].x > WIDTH || triangle.vertices[i].y < 0 || triangle.vertices[i].y > HEIGHT) {
+            return false;
+        }
+    }
+    return true;
+}
+vec3 getCanvasIntersectionPoint(vec3 cameraPosition,vec3 vertexPosition,float focalLength, float scalingFactor,mat3 Camera_Orientation){
+
+    glm::vec3 relativePosition = vertexPosition - cameraPosition;
+    //relativePosition =  Camera_Orientation*relativePosition+cameraPosition;
+    relativePosition =  Camera_Orientation*relativePosition;
+    // Calculate the projection coordinates of the vertices on the image plane
+    double u = (-focalLength * relativePosition.x / relativePosition.z)*scalingFactor + (WIDTH / 2);
+    double v = (focalLength * relativePosition.y / relativePosition.z)*scalingFactor + (HEIGHT / 2);
+    if (u >= 0 && u < WIDTH && v >= 0 && v < HEIGHT) {
+        float depth = 1.0f/(relativePosition.z);
+        return vec3(u, v,depth);
+    }
+    else {
+        return vec3(-1, -1,-1);
+        //return vec3(-u, -v,-relativePosition.z);
+        cout<<"vec:"<<-u<<endl;
+    }
+
+}
 
 void drawRenderLine(CanvasPoint from, CanvasPoint to, Colour inputColour, DrawingWindow &window,vector<vector<float>>& depthBuffer){
     float xdistance = to.x - from.x;
@@ -40,21 +66,24 @@ void drawRenderLine(CanvasPoint from, CanvasPoint to, Colour inputColour, Drawin
         float z =from.depth+(i*zStepSize);
         //cout<<"z:"<<from.depth<<endl;
         //float z=from.depth;
-        //cout<<"db0:"<<depthBuffer[round(x)][round(y)]<<endl;
+        cout<<"db0:"<<depthBuffer[round(x)][round(y)]<<endl;
         //cout<<"db0JJJJ:"<<depthBuffer[x][y]<<endl;
-        //cout<<"z0:"<<z<<endl;
-        if (-1.0f/z>depthBuffer[round(x)][round(y)]){
+        cout<<"z0:"<<z<<endl;
+        //if (fabs(z) < 1e-6) continue;
+        //if (-1.0f/z>depthBuffer[round(x)][round(y)]){
+            if (z<depthBuffer[round(x)][round(y)]){
            // cout<<"dbHHHHH:"<<depthBuffer[round(x)][round(y)]<<endl;
             //cout<<"zHHHH:"<<z<<endl;
             uint32_t Colour = (255 << 24) + (inputColour.red << 16) + (inputColour.green << 8) + inputColour.blue;
             //round(x) is a mathematical function used to round a floating-point number x to the nearest integer
             window.setPixelColour(round(x), round(y), Colour);
-            depthBuffer[round(x)][round(y)]=-1.0f/z;
+            depthBuffer[round(x)][round(y)]=z;
             // cout<<"db2:"<<depthBuffer[round(x)][round(y)]<<endl;
             // cout<<"z2:"<<z<<endl;
         }
     }
 }
+
 
 //void drawRenderTriangles(CanvasTriangle triangle, Colour fillColour, Colour LineColour, DrawingWindow &window,vector<vector<float>>& depthBuffer) {
 //    CanvasPoint top = triangle[0];
@@ -107,108 +136,96 @@ void drawRenderLine(CanvasPoint from, CanvasPoint to, Colour inputColour, Drawin
 //    drawRenderLine(bottom, top, LineColour, window,depthBuffer);
 //
 //}
-//
-
-
-
 void drawRenderTriangles(CanvasTriangle triangle, Colour fillColour, Colour LineColour, DrawingWindow &window, vector<vector<float>>& depthBuffer) {
-    // Sort the vertices by y-coordinate
+
     if (triangle[0].y > triangle[1].y) std::swap(triangle[0], triangle[1]);
     if (triangle[0].y > triangle[2].y) std::swap(triangle[0], triangle[2]);
     if (triangle[1].y > triangle[2].y) std::swap(triangle[1], triangle[2]);
 
-    // Calculate the edge slopes
     float invSlope1 = (triangle[1].x - triangle[0].x) / (triangle[1].y - triangle[0].y);
     float invSlope2 = (triangle[2].x - triangle[0].x) / (triangle[2].y - triangle[0].y);
     float depthSlope1 = (triangle[1].depth - triangle[0].depth) / (triangle[1].y - triangle[0].y);
     float depthSlope2 = (triangle[2].depth - triangle[0].depth) / (triangle[2].y - triangle[0].y);
 
-    // Fill the top part of the triangle
     float x1 = triangle[0].x;
     float x2 = triangle[0].x;
     float depth1 = triangle[0].depth;
     float depth2 = triangle[0].depth;
+        for (float y = triangle[0].y; y < triangle[1].y; y++) {
+            float startX = std::min(x1, x2);
+            float endX = std::max(x1, x2);
+            float startDepth = std::min(depth1, depth2);
 
-    for (float y = triangle[0].y; y < triangle[1].y; y++) {
-        float startX = std::min(x1, x2);
-        float endX = std::max(x1, x2);
-        float startDepth = std::min(depth1, depth2);
+            for (float x = round(startX); x <= round(endX); x++) {
+                if (x >= 0 && x < window.width && y >= 0 && y < window.height) {
 
-        for (float x = round(startX); x <= round(endX); x++) {
-            if (x >= 0 && x < window.width && y >= 0 && y < window.height) {
-                if (-1.0f/startDepth>depthBuffer[round(x)][round(y)]) {
-                    depthBuffer[round(x)][round(y)] = -1.0f/startDepth;
-                    uint32_t Colour = (255 << 24) + (fillColour.red << 16) + (fillColour.green << 8) + fillColour.blue;
-                    window.setPixelColour(round(x), round(y), Colour);
+                    //if (-1.0f / startDepth > depthBuffer[round(x)][round(y)]) {
+                        if (startDepth <depthBuffer[round(x)][round(y)]) {
+                        depthBuffer[round(x)][round(y)] = startDepth;
+                        uint32_t Colour =
+                                (255 << 24) + (fillColour.red << 16) + (fillColour.green << 8) + fillColour.blue;
+                       // if (isTriangleInsideViewFrustrum(triangle)) {
+                        window.setPixelColour(round(x), round(y), Colour);
+                        //  }else{break;}
+                    }
                 }
             }
+            x1 += invSlope1;
+            x2 += invSlope2;
+            depth1 += depthSlope1;
+            depth2 += depthSlope2;
         }
-        x1 += invSlope1;
-        x2 += invSlope2;
-        depth1 += depthSlope1;
-        depth2 += depthSlope2;
-    }
 
-    // Calculate new edge slope
-    float invSlope3 = (triangle[2].x - triangle[1].x) / (triangle[2].y - triangle[1].y);
-    float depthSlope3 = (triangle[2].depth - triangle[1].depth) / (triangle[2].y - triangle[1].y);
+        float invSlope3 = (triangle[2].x - triangle[1].x) / (triangle[2].y - triangle[1].y);
+        float depthSlope3 = (triangle[2].depth - triangle[1].depth) / (triangle[2].y - triangle[1].y);
 
-    x1 = triangle[1].x;
-    depth1 = triangle[1].depth;
+        x1 = triangle[1].x;
+        depth1 = triangle[1].depth;
 
-    for (float y = triangle[1].y; y <= triangle[2].y; y++) {
-        float startX = std::min(x1, x2);
-        float endX = std::max(x1, x2);
-        float startDepth = std::min(depth1, depth2);
+        for (float y = triangle[1].y; y <= triangle[2].y; y++) {
+            float startX = std::min(x1, x2);
+            float endX = std::max(x1, x2);
+            float startDepth = std::min(depth1, depth2);
 
-        for (float x = round(startX); x <= round(endX); x++) {
-            if (x >= 0 && x < window.width && y >= 0 && y < window.height) {
-                if (-1.0f/startDepth>depthBuffer[round(x)][round(y)]) {
-                    depthBuffer[round(x)][round(y)] = -1.0f/startDepth;
-                    uint32_t Colour = (255 << 24) + (fillColour.red << 16) + (fillColour.green << 8) + fillColour.blue;
-                    window.setPixelColour(round(x), round(y), Colour);
+            for (float x = round(startX); x <= round(endX); x++) {
+                if (x >= 0 && x < window.width && y >= 0 && y < window.height) {
+
+                    //if (-1.0f / startDepth > depthBuffer[round(x)][round(y)]) {
+                        if ( startDepth < depthBuffer[round(x)][round(y)]) {
+                        depthBuffer[round(x)][round(y)] =  startDepth;
+                        uint32_t Colour =
+                                (255 << 24) + (fillColour.red << 16) + (fillColour.green << 8) + fillColour.blue;
+                       // if (isTriangleInsideViewFrustrum(triangle)) {
+                        window.setPixelColour(round(x), round(y), Colour);
+                       //       }else{break;}
+                    }
                 }
             }
+            x1 += invSlope3;
+            x2 += invSlope2;
+            depth1 += depthSlope3;
+            depth2 += depthSlope2;
         }
-        x1 += invSlope3;
-        x2 += invSlope2;
-        depth1 += depthSlope3;
-        depth2 += depthSlope2;
-    }
-    // Draw the triangle edges
+
+
     drawRenderLine(triangle[0], triangle[1], LineColour, window, depthBuffer);
     drawRenderLine(triangle[1], triangle[2], LineColour, window, depthBuffer);
     drawRenderLine(triangle[2], triangle[0], LineColour, window, depthBuffer);
 }
 
 
-vec3 getCanvasIntersectionPoint(vec3 cameraPosition,vec3 vertexPosition,float focalLength, float scalingFactor){
-
-    glm::vec3 relativePosition = vertexPosition - cameraPosition;
-    // Calculate the projection coordinates of the vertices on the image plane
-    float u = (-focalLength * relativePosition.x / relativePosition.z)*scalingFactor + (WIDTH / 2);
-    float v = (focalLength * relativePosition.y / relativePosition.z)*scalingFactor + (HEIGHT / 2);
-
-    //vec2 CanvasPoint(u,v);
-    if (u >= 0 && u < WIDTH && v >= 0 && v < HEIGHT) {
-        float depth = (relativePosition.z);
-        return vec3(u, v,depth);
-    }
-    else {
-        return vec3(-1, -1,-1);
-    }
-
-}
 
 
 
-void RenderScene(DrawingWindow &window, const std::vector<ModelTriangle>& modelTriangles,glm::vec3 cameraPosition) {
-    int width = window.width;
-    int height = window.height;
-    //std::vector<std::vector<float>> depthBuffer(width, std::vector<float>(height, 0.001));
-    std::vector<std::vector<float>> depthBuffer(width, std::vector<float>(height, -(numeric_limits<float>::infinity())));
 
+void RenderScene(DrawingWindow &window, const std::vector<ModelTriangle>& modelTriangles,glm::vec3 cameraPosition,mat3 Camera_Orientation,std::vector<std::vector<float>> depthBuffer) {
     window.clearPixels();
+    //int width = WIDTH;
+   // int height = HEIGHT;
+    //std::vector<std::vector<float>> depthBuffer(width, std::vector<float>(height, 0.001));
+   // std::vector<std::vector<float>> depthBuffer(width, std::vector<float>(height, -(numeric_limits<float>::infinity())));
+
+
     //glm::vec3 cameraPosition(0.0f, 0.0f, 4.0f);
     float focalLength = 2.0f;
     // Image plane scaling factor
@@ -217,15 +234,24 @@ void RenderScene(DrawingWindow &window, const std::vector<ModelTriangle>& modelT
         CanvasTriangle canvasTriangle;
         for (int i = 0; i < 3; i++) {
             vec3 vertexPosition = modelTriangle.vertices[i];
-            glm::vec3 canvasPoint = getCanvasIntersectionPoint(cameraPosition, vertexPosition, focalLength, scalingFactor);
-            if (canvasPoint.x != -1 && canvasPoint.y != -1) {
+            glm::vec3 canvasPoint = getCanvasIntersectionPoint(cameraPosition, vertexPosition, focalLength, scalingFactor,Camera_Orientation);
+           // if (canvasPoint.x != -1 && canvasPoint.y != -1) {
                 CanvasPoint p = {canvasPoint.x, canvasPoint.y,canvasPoint.z};
                 canvasTriangle.vertices[i] = p;
-            }
+           // }
         }
         //drawSpecialTriangle(canvasTriangle,modelTriangle.colour,window);
-       // drawFilledTriangles(canvasTriangle, modelTriangle.colour, modelTriangle.colour, window);
-        drawRenderTriangles(canvasTriangle, modelTriangle.colour, modelTriangle.colour, window, depthBuffer);
-
+        //drawFilledTriangles(canvasTriangle, modelTriangle.colour, modelTriangle.colour, window);
+        //if (isTriangleInsideViewFrustrum(canvasTriangle)) {
+            drawRenderTriangles(canvasTriangle, modelTriangle.colour, modelTriangle.colour, window, depthBuffer);
+        //}
     }
 }
+
+
+
+
+
+
+
+
