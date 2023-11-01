@@ -37,28 +37,24 @@ mat3 lookAt(vec3 cameraPosition, vec3 target) {
     return mat3(right, up, forward);
 }
 
-// 使用lookAt函数时，您可以在每次更改摄像机位置后调用它：
+
 void orbitAndLookAt(vec3& cameraPosition, vec3 orbitCenter, float angleIncrement) {
     vec3 relativePos = cameraPosition - orbitCenter;
 
-    // 使用Y轴上的旋转矩阵来旋转摄像机位置
     float cosA = cos(angleIncrement);
     float sinA = sin(angleIncrement);
 
     vec3 newPosition;
     newPosition.x = relativePos.x * cosA - relativePos.z * sinA;
-    newPosition.y = relativePos.y;  // 在Y轴上不旋转
+    newPosition.y = relativePos.y;
     newPosition.z = relativePos.x * sinA + relativePos.z * cosA;
 
-    // 将旋转后的相对位置加回到旋转中心
+
     cameraPosition = orbitCenter + newPosition;
 
-    // 使用lookAt函数来获取摄像机的方向
+
     mat3 orientation = lookAt(cameraPosition, orbitCenter);
 
-    // 根据您的渲染引擎和摄像机设置，您可以使用这个方向矩阵来渲染场景
-    // 例如，如果您有一个函数来设置摄像机的方向，您可以调用它：
-    // setCameraOrientation(orientation);
 }
 
 

@@ -193,8 +193,7 @@ void drawRenderTriangles(CanvasTriangle triangle, Colour fillColour, Colour Line
                     //if (-1.0f / startDepth > depthBuffer[round(x)][round(y)]) {
                         if ( startDepth < depthBuffer[round(x)][round(y)]) {
                         depthBuffer[round(x)][round(y)] =  startDepth;
-                        uint32_t Colour =
-                                (255 << 24) + (fillColour.red << 16) + (fillColour.green << 8) + fillColour.blue;
+                        uint32_t Colour =(255 << 24) + (fillColour.red << 16) + (fillColour.green << 8) + fillColour.blue;
                        // if (isTriangleInsideViewFrustrum(triangle)) {
                         window.setPixelColour(round(x), round(y), Colour);
                        //       }else{break;}

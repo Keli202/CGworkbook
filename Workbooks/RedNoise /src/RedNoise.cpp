@@ -37,17 +37,17 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 //week4
 //std::vector<std::vector<float>> depthBuffer(WIDTH, std::vector<float>(HEIGHT, -numeric_limits<float>::infinity()));
 //std::vector<std::vector<float>> depthBuffer(WIDTH, std::vector<float>(HEIGHT, 0.0f));
-
-//void ClearDepthBuffer() {
-//    for (int x = 0; x < WIDTH; x++) {
-//        for (int y = 0; y < HEIGHT; y++) {
-//            depthBuffer[x][y] = -std::numeric_limits<float>::infinity();
-//        }
-//    }
-//}
-
-
 std::vector<std::vector<float>> depthBuffer(WIDTH, std::vector<float>(HEIGHT, std::numeric_limits<float>::infinity()));
+
+void ClearDepthBuffer() {
+    for (int x = 0; x < WIDTH; x++) {
+        for (int y = 0; y < HEIGHT; y++) {
+            depthBuffer[x][y] = std::numeric_limits<float>::infinity();
+        }
+    }
+}
+
+
 
 
 int main(int argc, char *argv[]) {
@@ -71,12 +71,10 @@ int main(int argc, char *argv[]) {
     SDL_Event event;
     while (true) {
         window.clearPixels();
-       // ClearDepthBuffer();
+        ClearDepthBuffer();
         // We MUST poll for events - otherwise the window will freeze !
         //if (window.pollForInputEvents(event)) handleEvent(event, window);
         //week3(event,window);
-
-
        //week4(modelTriangles,window);
         //RenderScene(window, modelTriangles,cameraPosition);
 
