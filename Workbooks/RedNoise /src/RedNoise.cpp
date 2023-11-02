@@ -48,6 +48,14 @@ void ClearDepthBuffer() {
 }
 
 
+void printMat3(const mat3& mat) {
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            cout << mat[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
 
 
 int main(int argc, char *argv[]) {
@@ -81,7 +89,16 @@ int main(int argc, char *argv[]) {
         RenderScene(window, modelTriangles, cameraPosition, Camera_Orientation,depthBuffer);
         if(window.pollForInputEvents(event)) {
             handleEvent(event, window);
-            changePosition(modelTriangles,cameraPosition,event,window,depthBuffer);
+            cout<<"camor:"<<endl;
+            printMat3(Camera_Orientation);
+            changePosition(modelTriangles,cameraPosition,event,window,depthBuffer,Camera_Orientation);
+            if (orbitEnabled) {
+                vec3 center = vec3(0.0f, 0.0f, 0.0f);
+                float angleIncrement = M_PI / 180;
+                orbitAndLookAt(cameraPosition, center, angleIncrement);
+                cout<<"camPO:"<<cameraPosition[0]<<","<<cameraPosition[1]<<","<<cameraPosition[2]<<endl;
+
+            }
         }
         // Need to render the frame at the end, or nothing actually gets shown on the screen !
         window.renderFrame();

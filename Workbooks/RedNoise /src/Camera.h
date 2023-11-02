@@ -26,14 +26,12 @@ mat3 rotation_x(float t) {
     return mat3(vec3( 1.0,    0.0,    0.0),vec3( 0.0, cos(t),-sin(t)),vec3( 0.0, sin(t), cos(t)));
 }
 
-mat3 lookAt(vec3 cameraPosition, vec3 target) {
-    vec3 forward = normalize(target - cameraPosition);
+mat3 lookAt(vec3 cameraPosition, vec3 lookPoint) {
+    vec3 forward = normalize(lookPoint - cameraPosition);
+    //cout<<"forward:"<<forward[0]<<endl;
     vec3 vertical = vec3(0.0f, 1.0f, 0.0f);
-
-    // 根据提示计算"Right"和"Up"向量
     vec3 right = normalize(cross(vertical, forward));
     vec3 up = normalize(cross(forward, right));
-
     return mat3(right, up, forward);
 }
 
@@ -51,16 +49,14 @@ void orbitAndLookAt(vec3& cameraPosition, vec3 orbitCenter, float angleIncrement
 
 
     cameraPosition = orbitCenter + newPosition;
-
-
-    mat3 orientation = lookAt(cameraPosition, orbitCenter);
+    Camera_Orientation = lookAt(cameraPosition, orbitCenter);
 
 }
-
-
-void changePosition(const std::vector<ModelTriangle>& modelTriangles,vec3& cameraPosition,SDL_Event event, DrawingWindow &window,std::vector<std::vector<float>> depthBuffer){
+static bool orbitEnabled = false;
+void changePosition(const std::vector<ModelTriangle>& modelTriangles,vec3& cameraPosition,SDL_Event event, DrawingWindow &window,std::vector<std::vector<float>> depthBuffer,mat3 Camera_Orientation){
     float a=0.1f;
     float t=M_PI/180;
+
     if (event.type == SDL_KEYDOWN) {
 
         if (event.key.keysym.sym == SDLK_a) { cameraPosition.x+=a;}
@@ -77,27 +73,24 @@ void changePosition(const std::vector<ModelTriangle>& modelTriangles,vec3& camer
         else if (event.key.keysym.sym == SDLK_RIGHT) {Camera_Orientation=Camera_Orientation*rotation_y(t);}
         else if (event.key.keysym.sym == SDLK_UP) {Camera_Orientation=Camera_Orientation*rotation_x(-t);}
         else if (event.key.keysym.sym == SDLK_DOWN) {Camera_Orientation=Camera_Orientation*rotation_x(t);}
-        else if (event.key.keysym.sym == SDLK_r) {float r = sqrt(cameraPosition.x*cameraPosition.x + cameraPosition.z*cameraPosition.z);
+        else if (event.key.keysym.sym == SDLK_r) {
+            float r = sqrt(cameraPosition.x*cameraPosition.x + cameraPosition.z*cameraPosition.z);
             float theta = atan2(cameraPosition.z, cameraPosition.x);
-                float deltaTheta = 0.01f;
+                float deltaTheta = 0.05f;
                 theta += deltaTheta;
-
                 cameraPosition.x = r * cos(theta);
                 cameraPosition.z = r * sin(theta);
 
         }
-//        else if (event.key.keysym.sym == SDLK_g){
-//            vec3 center = vec3(0.0f, 0.0f, 0.0f);  // 场景的中心
-//            float angleIncrement = M_PI / 180;  // 角度增量，例如每帧旋转1度
-//            orbitAndLookAt(cameraPosition, center, angleIncrement);
-//        }
+        else if (event.key.keysym.sym == SDLK_g){
+            orbitEnabled = !orbitEnabled;
+        }
 
     }
     else if (event.type == SDL_MOUSEBUTTONDOWN) {
         window.savePPM("output.ppm");
         window.saveBMP("output.bmp");
     }
-    //cout<<"c2:"<<Camera_Orientation<<endl;
     window.clearPixels();
     RenderScene(window, modelTriangles,cameraPosition,Camera_Orientation, depthBuffer);
 
