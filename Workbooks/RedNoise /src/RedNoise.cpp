@@ -57,6 +57,9 @@ void printMat3(const mat3& mat) {
     }
 }
 
+//vec3 Camera_Up = vec3(0.0, 1.0, 0.0);
+//mat3 Camera_Orientation(vec3( 1.0,    0.0,    0.0),vec3( 0.0, 1.0,0.0),vec3( 0.0, 0.0, 1.0));
+//mat3 Camera_Orientation(vec3( 1.0,    0.0,    0.0),Camera_Up,vec3( 0.0, 0.0, 1.0));
 
 int main(int argc, char *argv[]) {
    // week1();
@@ -89,16 +92,15 @@ int main(int argc, char *argv[]) {
         RenderScene(window, modelTriangles, cameraPosition, Camera_Orientation,depthBuffer);
         if(window.pollForInputEvents(event)) {
             handleEvent(event, window);
-            cout<<"camor:"<<endl;
-            printMat3(Camera_Orientation);
+//            cout<<"camor:"<<endl;
+//            printMat3(Camera_Orientation);
             changePosition(modelTriangles,cameraPosition,event,window,depthBuffer,Camera_Orientation);
-            if (orbitEnabled) {
-                vec3 center = vec3(0.0f, 0.0f, 0.0f);
-                float angleIncrement = M_PI / 180;
-                orbitAndLookAt(cameraPosition, center, angleIncrement);
-                cout<<"camPO:"<<cameraPosition[0]<<","<<cameraPosition[1]<<","<<cameraPosition[2]<<endl;
 
-            }
+        }
+        if (orbitEnabled) {
+            float angleIncrement = M_PI / 180;
+            orbitAndLookAt(cameraPosition, center, angleIncrement);
+           // cout<<"camPO:"<<cameraPosition[0]<<","<<cameraPosition[1]<<","<<cameraPosition[2]<<endl;
         }
         // Need to render the frame at the end, or nothing actually gets shown on the screen !
         window.renderFrame();
