@@ -2877,8 +2877,11 @@ CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o: /Users/niukeli/Desktop/CG/workbook/W
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/drawTriangle.h \
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/Camera.h \
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/draw.h \
-  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/readOBJ.h
+  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/readOBJ.h \
+  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/Ray.h
 
+
+/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/Ray.h:
 
 /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/readOBJ.h:
 

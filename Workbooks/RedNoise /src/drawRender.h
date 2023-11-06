@@ -30,7 +30,9 @@ vec3 getCanvasIntersectionPoint(vec3 cameraPosition,vec3 vertexPosition,float fo
         return vec3(-1, -1, -1);
     }
     // Calculate the projection coordinates of the vertices on the image plane
-    double u = (-focalLength * relativePosition.x / relativePosition.z)*scalingFactor + (WIDTH / 2);
+    double u = (focalLength * relativePosition.x / relativePosition.z)*scalingFactor + (WIDTH / 2);
+    //cout<<"X0:"<<relativePosition.x<<endl;
+    //cout<<"y0:"<<relativePosition.y<<endl;
     double v = (focalLength * relativePosition.y / relativePosition.z)*scalingFactor + (HEIGHT / 2);
     if (u >= 0 && u < WIDTH && v >= 0 && v < HEIGHT) {
         float depth = 1.0f/(relativePosition.z);
@@ -69,7 +71,7 @@ void drawRenderLine(CanvasPoint from, CanvasPoint to, Colour inputColour, Drawin
 //        if (roundedX < 0 || roundedX >= window.width || roundedY < 0 || roundedY >= window.height) {
 //            continue;
 //        }
-        if (roundedX > 0 && roundedX <= WIDTH && roundedY > 0 && roundedY <= HEIGHT) {
+        if (roundedX > 0 && roundedX < WIDTH && roundedY > 0 && roundedY < HEIGHT) {
 
             if (z < depthBuffer[round(x)][round(y)]) {
                 uint32_t Colour = (255 << 24) + (inputColour.red << 16) + (inputColour.green << 8) + inputColour.blue;

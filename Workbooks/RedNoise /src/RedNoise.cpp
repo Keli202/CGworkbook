@@ -16,6 +16,7 @@
 #include "Camera.h"
 #include "draw.h"
 #include "readOBJ.h"
+#include "Ray.h"
 using namespace std;
 using namespace glm;
 
@@ -48,6 +49,11 @@ void ClearDepthBuffer() {
 }
 
 
+//g
+
+//vec3 Camera_Up = vec3(0.0, 1.0, 0.0);
+//mat3 Camera_Orientation(vec3( 1.0,    0.0,    0.0),vec3( 0.0, 1.0,0.0),vec3( 0.0, 0.0, 1.0));
+//mat3 Camera_Orientation(vec3( 1.0,    0.0,    0.0),Camera_Up,vec3( 0.0, 0.0, 1.0));
 void printMat3(const mat3& mat) {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
@@ -56,11 +62,6 @@ void printMat3(const mat3& mat) {
         cout << endl;
     }
 }
-
-//vec3 Camera_Up = vec3(0.0, 1.0, 0.0);
-//mat3 Camera_Orientation(vec3( 1.0,    0.0,    0.0),vec3( 0.0, 1.0,0.0),vec3( 0.0, 0.0, 1.0));
-//mat3 Camera_Orientation(vec3( 1.0,    0.0,    0.0),Camera_Up,vec3( 0.0, 0.0, 1.0));
-
 int main(int argc, char *argv[]) {
    // week1();
     //loadOBJ("cornell-box.obj", 0.35);
@@ -98,8 +99,8 @@ int main(int argc, char *argv[]) {
 
         }
         if (orbitEnabled) {
-            float angleIncrement = M_PI / 180;
-            orbitAndLookAt(cameraPosition, center, angleIncrement);
+            float angle = -M_PI / 180;
+            orbitAndLookAt(cameraPosition, center, angle);
            // cout<<"camPO:"<<cameraPosition[0]<<","<<cameraPosition[1]<<","<<cameraPosition[2]<<endl;
         }
         // Need to render the frame at the end, or nothing actually gets shown on the screen !

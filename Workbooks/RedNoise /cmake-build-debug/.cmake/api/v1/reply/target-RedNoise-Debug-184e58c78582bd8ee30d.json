@@ -33,25 +33,25 @@
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 80,
+				"line" : 81,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 71,
+				"line" : 72,
 				"parent" : 0
 			},
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 58,
+				"line" : 59,
 				"parent" : 0
 			},
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 78,
+				"line" : 79,
 				"parent" : 0
 			},
 			{
@@ -233,7 +233,8 @@
 				11,
 				12,
 				13,
-				14
+				14,
+				15
 			]
 		}
 	],
@@ -322,6 +323,11 @@
 		{
 			"backtrace" : 1,
 			"path" : "src/readOBJ.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "src/Ray.h",
 			"sourceGroupIndex" : 1
 		}
 	],
