@@ -10,6 +10,7 @@
 #include <TextureMap.h>
 #include <ModelTriangle.h>
 #include <cmath>
+//#include "Ray.h"
 using namespace std;
 using namespace glm;
 #ifndef REDNOISE_CAMERA_H
@@ -58,6 +59,9 @@ void orbitAndLookAt(vec3& cameraPosition, vec3 orbitCenter, float angle) {
 
 }
 static bool orbitEnabled = false;
+bool render=false;
+bool ray=false;
+bool wire=false;
 void changePosition(const std::vector<ModelTriangle>& modelTriangles,vec3& cameraPosition,SDL_Event event, DrawingWindow &window,std::vector<std::vector<float>> depthBuffer,mat3& Camera_Orientation){
     float a=0.1f;
     float t=M_PI/180;
@@ -91,6 +95,15 @@ void changePosition(const std::vector<ModelTriangle>& modelTriangles,vec3& camer
             if (orbitEnabled) {orbitAndLookAt(cameraPosition, center, M_PI / 180);
             }
         }
+        else if(event.key.keysym.sym == SDLK_1){
+            render=!render;
+        }
+        else if(event.key.keysym.sym == SDLK_2){
+            ray=!ray;
+        }
+        else if(event.key.keysym.sym == SDLK_3){
+            wire=!wire;
+        }
 
     }
     else if (event.type == SDL_MOUSEBUTTONDOWN) {
@@ -100,6 +113,13 @@ void changePosition(const std::vector<ModelTriangle>& modelTriangles,vec3& camer
 
 
     window.clearPixels();
-    RenderScene(window, modelTriangles,cameraPosition,Camera_Orientation, depthBuffer);
+    if(render){    RenderScene(window, modelTriangles,cameraPosition,Camera_Orientation, depthBuffer);}
+    //RenderScene(window, modelTriangles,cameraPosition,Camera_Orientation, depthBuffer);
+   if(ray){draw_raytrace(modelTriangles, window, cameraPosition, Camera_Orientation);}
+    //draw_raytrace(modelTriangles, window, cameraPosition, Camera_Orientation);
+   if(wire) {RenderTriangle(window, modelTriangles,cameraPosition,Camera_Orientation, depthBuffer);}
+
+
+
 
 }

@@ -13,10 +13,11 @@
 #include <ModelTriangle.h>
 #include "drawRender.h"
 #include "drawTriangle.h"
+#include "Ray.h"
 #include "Camera.h"
 #include "draw.h"
 #include "readOBJ.h"
-#include "Ray.h"
+
 using namespace std;
 using namespace glm;
 
@@ -78,6 +79,10 @@ int main(int argc, char *argv[]) {
 
     glm::vec3 cameraPosition(0.0f, 0.0f, 4.0f);
     std::vector<ModelTriangle> modelTriangles=readOBJ("../cornell-box.obj", 0.35);
+   //std::vector<ModelTriangle> modelTriangles=readOBJ("../textured-cornell-box.obj", 0.35);
+
+    float focal_length = 2.0f;
+
     DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
     //mat3 Camera_Orientation(vec3( 1.0,    0.0,    0.0),vec3( 0.0, 1.0,0.0),vec3( 0.0, 0.0, 1.0));
     SDL_Event event;
@@ -90,12 +95,13 @@ int main(int argc, char *argv[]) {
        //week4(modelTriangles,window);
         //RenderScene(window, modelTriangles,cameraPosition);
 
-        RenderScene(window, modelTriangles, cameraPosition, Camera_Orientation,depthBuffer);
+        //draw_raytrace(modelTriangles, window, cameraPosition);
+        changePosition(modelTriangles,cameraPosition,event,window,depthBuffer,Camera_Orientation);
+
+        //RenderScene(window, modelTriangles, cameraPosition, Camera_Orientation,depthBuffer);
         if(window.pollForInputEvents(event)) {
             handleEvent(event, window);
-//            cout<<"camor:"<<endl;
-//            printMat3(Camera_Orientation);
-            changePosition(modelTriangles,cameraPosition,event,window,depthBuffer,Camera_Orientation);
+            //changePosition(modelTriangles,cameraPosition,event,window,depthBuffer,Camera_Orientation);
 
         }
         if (orbitEnabled) {

@@ -27,6 +27,7 @@ void readOBJColour(const std::string& filename,std::vector<std::pair<std::string
     string line;
     //vector<vec3> vertices;
     string content;
+    string textureFile =" ";
     while (getline(file, line)) {
         if (line.empty()) {
             continue;
@@ -47,15 +48,22 @@ void readOBJColour(const std::string& filename,std::vector<std::pair<std::string
             int blue = static_cast<int>(b * 255);
             palette.emplace_back(content, Colour(red, green, blue));
         }
+        if(tokens[0]=="map_Kd"){
+          textureFile=tokens[1];
+        }
 
     }
     file.close();
 }
 
+
+
 vector<ModelTriangle> readOBJ(const std::string& filename, float scale){
     ifstream file(filename);
     vector<ModelTriangle> triangles;
     vector<vec3> vertices;
+
+    vector<TexturePoint> textureVertices;
 
     if(!file.is_open()){
         cerr<<"Error: Could not open file "<<filename<<std::endl;
@@ -68,7 +76,9 @@ vector<ModelTriangle> readOBJ(const std::string& filename, float scale){
     vector<pair<string, Colour>> palette;
 
     // Read the MTL file and populate the palette
-    readOBJColour("../cornell-box.mtl",palette);
+    //readOBJColour("../cornell-box.mtl",palette);
+    readOBJColour("../textured-cornell-box.mtl",palette);
+
     string currentMaterial;
 
     while(getline(file,line)){
@@ -103,11 +113,75 @@ vector<ModelTriangle> readOBJ(const std::string& filename, float scale){
             //cout<<triangleColour<<endl;
             ModelTriangle triangle(vertices[v1], vertices[v2], vertices[v3], triangleColour);
             triangles.push_back(triangle);
-//               ModelTriangle triangle(vertices[v1], vertices[v2], vertices[v3],Colour{255,255,255});
-//               triangles.push_back(triangle);
+////               ModelTriangle triangle(vertices[v1], vertices[v2], vertices[v3],Colour{255,255,255});
+////               triangles.push_back(triangle);
+
+
+//            std::vector<std::string> parts = split(line, '/');
+//            int v1, v2, v3;
+//            v1 = std::stoi(tokens[1]) - 1;
+//            v2 = std::stoi(tokens[2]) - 1;
+//            v3 = std::stoi(tokens[3]) - 1;
+//            Colour triangleColour;
+//            for (const auto& data : palette) {
+//                if (data.first == currentMaterial) {
+//                    triangleColour = data.second;
+//                    break;
+//                }
+//            }
+//            ModelTriangle triangle(vertices[v1], vertices[v2], vertices[v3], triangleColour);
+//            if(tokens[1].size() > 1 && tokens[2].size() > 1 && tokens[3].size() > 1) {
+//                int vt1Index = std::stoi(tokens[1]) - 1;
+//                int vt2Index = std::stoi(tokens[2]) - 1;
+//                int vt3Index = std::stoi(tokens[3]) - 1;
+//                if(vt1Index >= 0 && vt2Index >= 0 && vt3Index >= 0) {
+//                    triangle.texturePoints[0] = textureVertices[vt1Index];
+//                    triangle.texturePoints[1] = textureVertices[vt2Index];
+//                    triangle.texturePoints[2] = textureVertices[vt3Index];
+//                }
+//            }
+
+//            std::vector<std::string> parts = split(line, '/');
+//            int v1, v2, v3;
+//            float vt1,vt2,vt3;
+//            v1 = std::stoi(tokens[1]) - 1;
+//            cout<<"v1:"<<tokens[1]<<endl;
+//            v2 = std::stoi(tokens[2]) - 1;
+//            cout<<"v2:"<<v2<<endl;
+//            v3 = std::stoi(tokens[3]) - 1;
+//            cout<<"v3:"<<v3<<endl;
+//            //vt1=std::stoi(tokens[1]);;
+//            cout<<"vt1:"<<vt1<<endl;
+//
+//            Colour triangleColour;
+//            for (const auto& data : palette) {
+//                if (data.first == currentMaterial) {
+//                    triangleColour = data.second;
+//                    break;
+//                }
+//            }
+//            ModelTriangle triangle(vertices[v1], vertices[v2], vertices[v3], triangleColour);
+//
+//            //ModelTriangle triangle(vertices[vIndices[0]], vertices[vIndices[1]], vertices[vIndices[2]], materialColour);
+////            if (!textureVertices.empty()) {
+////                triangle.texturePoints[0] = textureVertices[vtIndices[0]];
+////                triangle.texturePoints[1] = textureVertices[vtIndices[1]];
+////                triangle.texturePoints[2] = textureVertices[vtIndices[2]];
+////            }
+           // triangles.push_back(triangle);
+
+
+
         }
+
+
+
         if(tokens[0] == "usemtl"){
             currentMaterial = tokens[1];
+        }
+        if(tokens[0]=="vt"){
+            TexturePoint texPoint(std::stof(tokens[1]), std::stof(tokens[2]));
+            textureVertices.push_back(texPoint);
         }
     }
 

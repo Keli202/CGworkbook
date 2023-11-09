@@ -26,26 +26,16 @@ vec3 getCanvasIntersectionPoint(vec3 cameraPosition,vec3 vertexPosition,float fo
     glm::vec3 relativePosition = vertexPosition - cameraPosition;
     //relativePosition =  Camera_Orientation*relativePosition+cameraPosition;
     relativePosition =  Camera_Orientation*relativePosition;
-    if (-relativePosition.z<=0) {
-        return vec3(-1, -1, -1);
+    if (-relativePosition.z <0) {
+        return vec3(-1, -1, -1);// Vertex is behind the camera
+
     }
     // Calculate the projection coordinates of the vertices on the image plane
-    double u = (focalLength * relativePosition.x / relativePosition.z)*scalingFactor + (WIDTH / 2);
-    //cout<<"X0:"<<relativePosition.x<<endl;
-    //cout<<"y0:"<<relativePosition.y<<endl;
-    double v = (focalLength * relativePosition.y / relativePosition.z)*scalingFactor + (HEIGHT / 2);
-    if (u >= 0 && u < WIDTH && v >= 0 && v < HEIGHT) {
-        float depth = 1.0f/(relativePosition.z);
-        return vec3(u, v,depth);
-    }
-    else {
-        if (u < 0) u = 0;
-        if (u >= WIDTH) u = WIDTH - 1;
-        if (v < 0) v = 0;
-        if (v >= HEIGHT) v = HEIGHT - 1;
+        double u = (focalLength * relativePosition.x / relativePosition.z) * scalingFactor + (WIDTH / 2);
+        double v = (focalLength * relativePosition.y / relativePosition.z) * scalingFactor + (HEIGHT / 2);
+
         float depth = 1.0f / (relativePosition.z);
         return vec3(u, v, depth);
-    }
 
 }
 
@@ -68,11 +58,10 @@ void drawRenderLine(CanvasPoint from, CanvasPoint to, Colour inputColour, Drawin
         int roundedX = round(x);
         int roundedY = round(y);
 
-//        if (roundedX < 0 || roundedX >= window.width || roundedY < 0 || roundedY >= window.height) {
-//            continue;
-//        }
-        if (roundedX > 0 && roundedX < WIDTH && roundedY > 0 && roundedY < HEIGHT) {
-
+        if (roundedX < 0 || roundedX >= WIDTH || roundedY < 0 || roundedY >= HEIGHT) {
+            continue;
+        }
+        if (roundedX > 0 && roundedX <=WIDTH && roundedY > 0 && roundedY < HEIGHT) {
             if (z < depthBuffer[round(x)][round(y)]) {
                 uint32_t Colour = (255 << 24) + (inputColour.red << 16) + (inputColour.green << 8) + inputColour.blue;
                 window.setPixelColour(round(x), round(y), Colour);
@@ -116,8 +105,12 @@ void drawRenderTriangles(CanvasTriangle triangle, Colour fillColour, Colour Line
                 // Interpolate depth
                 float depth = lambda0 * v0.depth + lambda1 * v1.depth + lambda2 * v2.depth;
                 // Depth test
-                    if (depth < depthBuffer[x][y]) {
+
+                    if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT && depth < depthBuffer[x][y]) {
                         depthBuffer[x][y] = depth;
+                        //float u = lambda0 * v0.texturePoint.y + lambda1 * v1.texturePoint.x + lambda2 * v2.texturePoint.u;
+                        //float v = lambda0 * v0.texturePoint.y + lambda1 * v1.texturePoint.x + lambda2 * v2.texturePoint.v;
+
                         uint32_t colour =
                                 (255 << 24) + (fillColour.red << 16) + (fillColour.green << 8) + fillColour.blue;
                         window.setPixelColour(x, y, colour);
@@ -142,21 +135,53 @@ void RenderScene(DrawingWindow &window, const std::vector<ModelTriangle>& modelT
     float scalingFactor = 150.0f;
     for (const ModelTriangle& modelTriangle : modelTriangles) {
         CanvasTriangle canvasTriangle;
+        bool isValidTriangle = true;
         for (int i = 0; i < 3; i++) {
             vec3 vertexPosition = modelTriangle.vertices[i];
             glm::vec3 canvasPoint = getCanvasIntersectionPoint(cameraPosition, vertexPosition, focalLength, scalingFactor,Camera_Orientation);
-           // if (canvasPoint.x != -1 && canvasPoint.y != -1) {
+            if (canvasPoint.x == -1 && canvasPoint.y == -1) {
+                isValidTriangle = false;
+                break;
+            }
+            //if (canvasPoint.x != -1 && canvasPoint.y != -1) {
                 CanvasPoint p = {canvasPoint.x, canvasPoint.y,canvasPoint.z};
                 canvasTriangle.vertices[i] = p;
-           // }
+            //}else{canvasPoint=vec3(-1.0,-1.0,-1.0);}
         }
-        //drawSpecialTriangle(canvasTriangle,modelTriangle.colour,window);
-        //drawFilledTriangles(canvasTriangle, modelTriangle.colour, modelTriangle.colour, window);
+        if (isValidTriangle) {
             drawRenderTriangles(canvasTriangle, modelTriangle.colour, modelTriangle.colour, window, depthBuffer);
-
+        }
     }
 }
 
+void RenderTriangle(DrawingWindow &window, const std::vector<ModelTriangle>& modelTriangles,glm::vec3 cameraPosition,mat3 Camera_Orientation,std::vector<std::vector<float>> depthBuffer) {
+    window.clearPixels();
+    //glm::vec3 cameraPosition(0.0f, 0.0f, 4.0f);
+    float focalLength = 2.0f;
+    // Image plane scaling factor
+    float scalingFactor = 150.0f;
+    for (const ModelTriangle& modelTriangle : modelTriangles) {
+        CanvasTriangle canvasTriangle;
+        bool isValidTriangle = true;
+
+        for (int i = 0; i < 3; i++) {
+            vec3 vertexPosition = modelTriangle.vertices[i];
+            glm::vec3 canvasPoint = getCanvasIntersectionPoint(cameraPosition, vertexPosition, focalLength, scalingFactor,Camera_Orientation);
+            if (canvasPoint.x == -1 && canvasPoint.y == -1) {
+                isValidTriangle = false;
+                break;
+            }
+            CanvasPoint p = {canvasPoint.x, canvasPoint.y,canvasPoint.z};
+            canvasTriangle.vertices[i] = p;
+        }
+        if (isValidTriangle) {
+            drawRenderLine(canvasTriangle.v0(), canvasTriangle.v1(), modelTriangle.colour, window, depthBuffer);
+            drawRenderLine(canvasTriangle.v1(), canvasTriangle.v2(), modelTriangle.colour, window, depthBuffer);
+            drawRenderLine(canvasTriangle.v2(), canvasTriangle.v0(), modelTriangle.colour, window, depthBuffer);
+        }
+
+    }
+}
 
 
 
