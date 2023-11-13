@@ -71,6 +71,69 @@ void drawRenderLine(CanvasPoint from, CanvasPoint to, Colour inputColour, Drawin
     }
 }
 
+
+
+
+
+
+
+void drawTextureTriangle(CanvasTriangle triangle, TextureMap& texture, DrawingWindow &window, vector<vector<float>>& depthBuffer) {
+    // Sort the vertices by y-coordinate
+    if (triangle[0].y > triangle[1].y) std::swap(triangle[0], triangle[1]);
+    if (triangle[0].y > triangle[2].y) std::swap(triangle[0], triangle[2]);
+    if (triangle[1].y > triangle[2].y) std::swap(triangle[1], triangle[2]);
+
+    CanvasPoint v0 = triangle[0];
+    CanvasPoint v1 = triangle[1];
+    CanvasPoint v2 = triangle[2];
+
+    // Compute bounding box of the triangle
+    int minX = min({v0.x, v1.x, v2.x});
+    int maxX = max({v0.x, v1.x, v2.x});
+    int minY = min({v0.y, v1.y, v2.y});
+    int maxY = max({v0.y, v1.y, v2.y});
+
+    // Iterate over the bounding box
+    for (int x = minX; x <= maxX; x++) {
+        for (int y = minY; y <= maxY; y++) {
+            if (x < 0 || x >= window.width || y < 0 || y >= window.height) continue;
+
+            // Compute Barycentric coordinates
+            float lambda0 = ((v1.y - v2.y) * (x - v2.x) + (v2.x - v1.x) * (y - v2.y)) /
+                            ((v1.y - v2.y) * (v0.x - v2.x) + (v2.x - v1.x) * (v0.y - v2.y));
+            float lambda1 = ((v2.y - v0.y) * (x - v2.x) + (v0.x - v2.x) * (y - v2.y)) /
+                            ((v1.y - v2.y) * (v0.x - v2.x) + (v2.x - v1.x) * (v0.y - v2.y));
+            float lambda2 = 1.0f - lambda0 - lambda1;
+
+            // Check if the point is inside the triangle
+            if (lambda0 >= 0 && lambda1 >= 0 && lambda2 >= 0) {
+                // Interpolate depth
+                float depth = lambda0 * v0.depth + lambda1 * v1.depth + lambda2 * v2.depth;
+
+                // Depth test
+                if (depth < depthBuffer[x][y]) {
+                    depthBuffer[x][y] = depth;
+
+                    // Interpolate texture coordinates
+                    float texX = lambda0 * v0.texturePoint.x + lambda1 * v1.texturePoint.x + lambda2 * v2.texturePoint.x;
+                    float texY = lambda0 * v0.texturePoint.y + lambda1 * v1.texturePoint.y + lambda2 * v2.texturePoint.y;
+
+                    // Sample the texture color
+                    int texXInt = static_cast<int>(std::round(texX)) % texture.width;
+                    int texYInt = static_cast<int>(std::round(texY)) % texture.height;
+                    int textureIndex = texYInt * texture.width + texXInt;
+                    uint32_t colour = texture.pixels[textureIndex];
+
+                    // Set the pixel color
+                    window.setPixelColour(x, y, colour);
+                }
+            }
+        }
+    }
+}
+
+
+
 void drawRenderTriangles(CanvasTriangle triangle, Colour fillColour, Colour LineColour, DrawingWindow &window,vector<vector<float>>& depthBuffer) {
     // Sort the vertices by y-coordinate
     if (triangle[0].y > triangle[1].y) std::swap(triangle[0], triangle[1]);
@@ -146,10 +209,20 @@ void RenderScene(DrawingWindow &window, const std::vector<ModelTriangle>& modelT
             //if (canvasPoint.x != -1 && canvasPoint.y != -1) {
                 CanvasPoint p = {canvasPoint.x, canvasPoint.y,canvasPoint.z};
                 canvasTriangle.vertices[i] = p;
+                canvasTriangle.vertices[i].texturePoint=modelTriangle.texturePoints[i];
             //}else{canvasPoint=vec3(-1.0,-1.0,-1.0);}
         }
         if (isValidTriangle) {
-            drawRenderTriangles(canvasTriangle, modelTriangle.colour, modelTriangle.colour, window, depthBuffer);
+            if (!modelTriangle.colour.name.empty()) {
+                TextureMap texture(modelTriangle.colour.name);
+                for(int j = 0; j < canvasTriangle.vertices.size(); j++) {
+                    canvasTriangle.vertices[j].texturePoint.x *= texture.width;
+                    canvasTriangle.vertices[j].texturePoint.y *= texture.height;
+                }
+                drawTextureTriangle(canvasTriangle, texture, window, depthBuffer);
+            }else{
+                drawRenderTriangles(canvasTriangle, modelTriangle.colour, modelTriangle.colour, window, depthBuffer);
+            }
         }
     }
 }

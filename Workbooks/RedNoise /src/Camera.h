@@ -26,7 +26,7 @@ mat3 rotation_y(float t) {
 mat3 rotation_x(float t) {
     return mat3(vec3( 1.0,    0.0,    0.0),vec3( 0.0, cos(t),-sin(t)),vec3( 0.0, sin(t), cos(t)));
 }
-
+vec3 lightPosition(0.0f, 0.7f, 0.0f);
 
 mat3 lookAt(vec3 cameraPosition, vec3 lookPoint) {
     vec3 forward = normalize(cameraPosition-lookPoint);
@@ -62,10 +62,11 @@ static bool orbitEnabled = false;
 bool render=false;
 bool ray=false;
 bool wire=false;
-void changePosition(const std::vector<ModelTriangle>& modelTriangles,vec3& cameraPosition,SDL_Event event, DrawingWindow &window,std::vector<std::vector<float>> depthBuffer,mat3& Camera_Orientation){
+bool light=false;
+void changePosition(const std::vector<ModelTriangle>& modelTriangles,vec3& cameraPosition,SDL_Event event, DrawingWindow &window,std::vector<std::vector<float>> depthBuffer){
     float a=0.1f;
     float t=M_PI/180;
-
+    float lightMoveStep = 0.1f;
     if (event.type == SDL_KEYDOWN) {
 
         if (event.key.keysym.sym == SDLK_a) { cameraPosition.x+=a;}
@@ -82,6 +83,12 @@ void changePosition(const std::vector<ModelTriangle>& modelTriangles,vec3& camer
         else if (event.key.keysym.sym == SDLK_RIGHT) {Camera_Orientation=Camera_Orientation*rotation_y(t);}
         else if (event.key.keysym.sym == SDLK_UP) {Camera_Orientation=Camera_Orientation*rotation_x(-t);}
         else if (event.key.keysym.sym == SDLK_DOWN) {Camera_Orientation=Camera_Orientation*rotation_x(t);}
+        else if (event.key.keysym.sym == SDLK_z) { lightPosition.x -= lightMoveStep; }
+        else if (event.key.keysym.sym == SDLK_x) { lightPosition.x += lightMoveStep; }
+        else if (event.key.keysym.sym == SDLK_c) { lightPosition.y += lightMoveStep; }
+        else if (event.key.keysym.sym == SDLK_v) { lightPosition.y -= lightMoveStep; }
+        else if (event.key.keysym.sym == SDLK_b) { lightPosition.z -= lightMoveStep; }
+        else if (event.key.keysym.sym == SDLK_n) { lightPosition.z += lightMoveStep; }
         else if (event.key.keysym.sym == SDLK_r) {
             float r = sqrt(cameraPosition.x*cameraPosition.x + cameraPosition.z*cameraPosition.z);
             float theta = atan2(cameraPosition.z, cameraPosition.x);
@@ -104,6 +111,9 @@ void changePosition(const std::vector<ModelTriangle>& modelTriangles,vec3& camer
         else if(event.key.keysym.sym == SDLK_3){
             wire=!wire;
         }
+        else if(event.key.keysym.sym == SDLK_4){
+            light=!light;
+        }
 
     }
     else if (event.type == SDL_MOUSEBUTTONDOWN) {
@@ -118,6 +128,8 @@ void changePosition(const std::vector<ModelTriangle>& modelTriangles,vec3& camer
    if(ray){draw_raytrace(modelTriangles, window, cameraPosition, Camera_Orientation);}
     //draw_raytrace(modelTriangles, window, cameraPosition, Camera_Orientation);
    if(wire) {RenderTriangle(window, modelTriangles,cameraPosition,Camera_Orientation, depthBuffer);}
+   if(light) { drawRaytrace(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition);}
+    //drawRaytrace(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition);
 
 
 

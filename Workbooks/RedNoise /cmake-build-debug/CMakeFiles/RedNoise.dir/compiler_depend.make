@@ -2873,20 +2873,23 @@ CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o: /Users/niukeli/Desktop/CG/workbook/W
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/sdw/Colour.h \
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/sdw/TextureMap.h \
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/sdw/ModelTriangle.h \
+  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/readOBJ.h \
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/drawRender.h \
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/drawTriangle.h \
-  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/Ray.h \
+  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/light.h \
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/sdw/RayTriangleIntersection.h \
+  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/Ray.h \
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/Camera.h \
-  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/draw.h \
-  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/readOBJ.h
+  /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/draw.h
 
-
-/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/readOBJ.h:
 
 /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/Ray.h:
 
+/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/light.h:
+
 /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/drawRender.h:
+
+/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/readOBJ.h:
 
 /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/RedNoise.cpp:
 

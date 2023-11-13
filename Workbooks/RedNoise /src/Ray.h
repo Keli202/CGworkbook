@@ -62,7 +62,7 @@ bool isShadow(RayTriangleIntersection intersection, vec3 lightPosition,const vec
 
         float t = possibleSolution.x, u = possibleSolution.y, v = possibleSolution.z;
         if(u >= 0.0 && u <= 1.0 && v >= 0.0 && v <= 1.0 && (u + v) <= 1.0 &&t>0.01) {
-            if(t < length(lightPosition-intersection.intersectionPoint)&&i!=intersection.triangleIndex) {
+            if(t < length(lightPosition-intersection.intersectionPoint)&& i!=intersection.triangleIndex) {
                 return true;
             }
         }
@@ -78,16 +78,24 @@ bool isShadow(RayTriangleIntersection intersection, vec3 lightPosition,const vec
             float scalingFactor = 150.0f;
             float focal_length = 2.0f;
 
-            double x1 = -(x - (WIDTH / 2)) / (scalingFactor * focal_length)- camera_position.x;
-            double y1 = -(y - (HEIGHT / 2)) / (scalingFactor * focal_length)-camera_position.y;
-            double z1 = focal_length - camera_position.z;
+//            double x1 = -(x - (WIDTH / 2)) / (scalingFactor * focal_length)- camera_position.x;
+//            double y1 = -(y - (HEIGHT / 2)) / (scalingFactor * focal_length)-camera_position.y;
+//            double z1 = -focal_length - camera_position.z;
+            double x1 = -(x- camera_position.x - (WIDTH / 2)) / (scalingFactor * focal_length);
+            double y1 = -(y-camera_position.y - (HEIGHT / 2)) / (scalingFactor * focal_length);
+            double z1 = -focal_length ;
 
             glm::vec3 ray_direction = glm::vec3(x1 , y1 , z1);
             glm::vec3 direction= normalize(Camera_Orientation*ray_direction);
+
+
+
             // Find the closest intersection
             RayTriangleIntersection intersection = get_closest_intersection(camera_position, direction, triangles);
             //cout<<"1:"<<rt_int<<endl;
-            vec3 lightPosition(0.0f, 0.5f, 1.0f);
+
+
+            vec3 lightPosition(0.0f, 0.5f, 0.5f);
             if (!isinf(intersection.distanceFromCamera)) {
                 bool inShadow = isShadow(intersection, lightPosition, triangles);
                 Colour colour = intersection.intersectedTriangle.colour;

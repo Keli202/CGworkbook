@@ -11,12 +11,14 @@
 #include <CanvasTriangle.h>
 #include <TextureMap.h>
 #include <ModelTriangle.h>
+#include "readOBJ.h"
 #include "drawRender.h"
 #include "drawTriangle.h"
+#include "light.h"
 #include "Ray.h"
 #include "Camera.h"
 #include "draw.h"
-#include "readOBJ.h"
+
 
 using namespace std;
 using namespace glm;
@@ -96,7 +98,7 @@ int main(int argc, char *argv[]) {
         //RenderScene(window, modelTriangles,cameraPosition);
 
         //draw_raytrace(modelTriangles, window, cameraPosition);
-        changePosition(modelTriangles,cameraPosition,event,window,depthBuffer,Camera_Orientation);
+        changePosition(modelTriangles,cameraPosition,event,window,depthBuffer);
 
         //RenderScene(window, modelTriangles, cameraPosition, Camera_Orientation,depthBuffer);
         if(window.pollForInputEvents(event)) {

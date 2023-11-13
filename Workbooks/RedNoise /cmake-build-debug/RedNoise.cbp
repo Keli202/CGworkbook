@@ -160,6 +160,9 @@
 		<Unit filename="/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise /src/drawTriangle.h">
 			<Option target="RedNoise"/>
 		</Unit>
+		<Unit filename="/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise /src/light.h">
+			<Option target="RedNoise"/>
+		</Unit>
 		<Unit filename="/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise /src/readOBJ.h">
 			<Option target="RedNoise"/>
 		</Unit>
