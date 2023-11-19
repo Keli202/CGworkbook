@@ -21,11 +21,14 @@
 using namespace std;
 using namespace glm;
 
+bool diffuse=false;
+bool specular=false;
+bool gouraud=false;
+bool phong=false;
 
 RayTriangleIntersection getClosestIntersection(vec3 cameraPosition, vec3 rayDirection, const std::vector<ModelTriangle>& triangles) {
     RayTriangleIntersection closestIntersection;
     closestIntersection.distanceFromCamera = numeric_limits<float>::infinity();
-    //closestIntersection.triangleIndex = -1;
     for(int i = 0; i < triangles.size(); i++) {
         ModelTriangle triangle = triangles[i];
 
@@ -75,21 +78,25 @@ bool inShadow(RayTriangleIntersection intersection, vec3 lightPosition,const vec
 
 float calculateProximityLighting(const glm::vec3& lightPosition, const glm::vec3& intersectionPoint) {
     float distance = glm::length(lightPosition - intersectionPoint);
-    return std::min(1.0f, std::max(0.0f, 1.0f / static_cast<float>(4 * M_PI * distance * distance)));
+    return std::min(1.0f, std::max(0.0f, 10.0f / static_cast<float>(4 * M_PI * distance * distance)));
 }
+
 float calculateIncidenceLighting(const glm::vec3& lightPosition, const glm::vec3& intersectionPoint, const glm::vec3& normal) {
     glm::vec3 lightDirection = glm::normalize(lightPosition - intersectionPoint);
     return std::max(0.0f, glm::dot(glm::normalize(normal), lightDirection));
+    //return glm::clamp(glm::dot(glm::normalize(normal), lightDirection), 0.0f, 1.0f);
 }
 
 float calculateSpecularIntensity(const glm::vec3& lightDirection, const glm::vec3& viewDirection, const glm::vec3& normal, float specularExponent) {
     glm::vec3 reflectDirection = glm::reflect(-lightDirection, normal);
-    float specularity = glm::dot(reflectDirection, viewDirection);
+    //glm::vec3 reflectDirection= -lightDirection - 2.0f * normal * glm::dot(glm::normalize(-lightDirection), glm::normalize(normal));
+    float specularity = glm::dot(glm::normalize(reflectDirection), glm::normalize(viewDirection));
+    //float specularity = glm::dot(glm::normalize(viewDirection), glm::normalize(reflectDirection));
+
     specularity=glm::max(0.0f,specularity);
     float specularIntensity = pow(specularity, specularExponent);
     return specularIntensity;
 }
-
 
 glm::vec3 calculateNormal(const ModelTriangle& triangle) {
     glm::vec3 edge1 = triangle.vertices[1] - triangle.vertices[0];
@@ -98,32 +105,18 @@ glm::vec3 calculateNormal(const ModelTriangle& triangle) {
     return glm::normalize(normal);
 }
 
-Colour DiffuseColor(Colour colour,const glm::vec3& lightPosition, const glm::vec3& intersectionPoint, float incidenceLighting){
+
+
+float GetBrightness(const glm::vec3& intersectionPoint,vec3 lightPosition,glm::vec3 normal){
+    float incidenceLighting = calculateIncidenceLighting(lightPosition, intersectionPoint, normal);
     float proximityLighting = calculateProximityLighting(lightPosition, intersectionPoint);
-    colour.red *= std::min(proximityLighting + incidenceLighting, 1.0f);
-    colour.green *= std::min(proximityLighting + incidenceLighting, 1.0f);
-    colour.blue *= std::min(proximityLighting + incidenceLighting, 1.0f);
-
-    return colour;
-}
-
-Colour SpecularColor(Colour colour,const glm::vec3& lightDirection, const glm::vec3& viewDirection, const glm::vec3& normal, float specularExponent,float incidenceLighting){
-    float specularIntensity = calculateSpecularIntensity(lightDirection, viewDirection, normal, specularExponent);
-//    colour.red = std::min(255, static_cast<int>(colour.red*incidenceLighting+specularIntensity * 255));
-//    colour.green = std::min(255, static_cast<int>(colour.green*incidenceLighting+specularIntensity * 255));
-//    colour.blue = std::min(255, static_cast<int>(colour.blue*incidenceLighting+specularIntensity * 255));
-
-    colour.red = std::min(255, static_cast<int>(colour.red+specularIntensity * 255));
-    colour.green = std::min(255, static_cast<int>(colour.green+specularIntensity * 255));
-    colour.blue = std::min(255, static_cast<int>(colour.blue+specularIntensity * 255));
-    const float ambientLightIntensity = 0.2f;
-    colour.red = glm::max(static_cast<float>(colour.red), ambientLightIntensity);
-    colour.green = glm::max(static_cast<float>(colour.green), ambientLightIntensity);
-    colour.blue = glm::max(static_cast<float>(colour.blue), ambientLightIntensity);
-    return colour;
+    float brightness=glm::clamp((proximityLighting * incidenceLighting), 0.0f, 1.0f);
+    return brightness;
 }
 
 void drawRaytrace(const std::vector<ModelTriangle>& triangles, DrawingWindow &window, glm::vec3 camera_position,mat3 Camera_Orientation,vec3 lightPosition) {
+
+
     for (int x = 0; x < WIDTH; x++) {
         for (int y = 0; y < HEIGHT; y++) {
             float scalingFactor = 150.0f;
@@ -137,25 +130,47 @@ void drawRaytrace(const std::vector<ModelTriangle>& triangles, DrawingWindow &wi
             glm::vec3 direction= normalize(Camera_Orientation*ray_direction);
             // Find the closest intersection
             RayTriangleIntersection intersection = getClosestIntersection(camera_position, direction, triangles);
-            //vec3 lightPosition(0.0f, 0.5f, 0.5f);
             if (!isinf(intersection.distanceFromCamera)) {
                 bool Shadow = inShadow(intersection, lightPosition, triangles);
                 intersection.intersectedTriangle.normal = calculateNormal(intersection.intersectedTriangle);
-
-                float incidenceLighting = calculateIncidenceLighting(lightPosition, intersection.intersectionPoint, intersection.intersectedTriangle.normal);
+                glm::vec3 normal= intersection.intersectedTriangle.normal;
                 glm::vec3 lightDirection = glm::normalize(lightPosition - intersection.intersectionPoint);
                 glm::vec3 viewDirection = glm::normalize(camera_position - intersection.intersectionPoint);
-                //Colour colour=DiffuseColor(intersection.intersectedTriangle.colour,lightPosition, intersection.intersectionPoint, incidenceLighting);
 
-                //Colour colour=SpecularColor(intersection.intersectedTriangle.colour,lightDirection, viewDirection, intersection.intersectedTriangle.normal, 256.0f);
-                Colour colors=DiffuseColor(intersection.intersectedTriangle.colour,lightPosition, intersection.intersectionPoint,incidenceLighting);
-                Colour colour=SpecularColor(colors,lightDirection, viewDirection, intersection.intersectedTriangle.normal, 256.0f,incidenceLighting);
+                float specularIntensity = calculateSpecularIntensity(lightDirection, viewDirection, intersection.intersectedTriangle.normal, 256.0f);
+                float brightness = GetBrightness(intersection.intersectionPoint,lightPosition,intersection.intersectedTriangle.normal);
+                brightness = glm::clamp(brightness, 0.20f, 1.0f);
+                Colour colour=intersection.intersectedTriangle.colour;
+                if(diffuse){
+                    //colour=DiffuseColor(intersection.intersectedTriangle.colour,lightPosition, intersection.intersectionPoint,incidenceLighting);
+                    colour.red *= std::min(brightness ,1.0f);
+                    colour.green *=std::min( brightness ,1.0f);
+                    colour.blue *= std::min( brightness ,1.0f);
 
+                }else if(specular){
+                    //Highlights are more prominent and can be clearly observed, suitable for very smooth or metallic objects
+                    if (specularIntensity > brightness){
+                        brightness = specularIntensity;
+                    }
+                    colour.red = std::min(static_cast<int>(colour.red * brightness), 255);
+                    colour.green = std::min(static_cast<int>(colour.green * brightness), 255);
+                    colour.blue = std::min(static_cast<int>(colour.blue * brightness), 255);
+
+
+                    //It more realistically simulates the actual behavior of light on an object's surface
+//                    colour.red = std::min(static_cast<int>(colour.red * brightness+specularIntensity * 255), 255);
+//                    colour.green = std::min(static_cast<int>(colour.green * brightness+specularIntensity * 255), 255);
+//                    colour.blue = std::min(static_cast<int>(colour.blue * brightness+specularIntensity * 255), 255);
+                }
 
                 if (Shadow) {
-                    uint32_t color_value = (255 << 24) + (static_cast<int>(colour.red) / 3 << 16) +
-                                           (static_cast<int>(colour.green) / 3 << 8) +
-                                           static_cast<int>(colour.blue) / 3;
+//                    brightness=0.4;
+//                    colour.red *= brightness ;
+//                    colour.green *= brightness ;
+//                    colour.blue *=  brightness ;
+                    uint32_t color_value = (255 << 24) + (static_cast<int>(colour.red)/3  << 16) +
+                                           (static_cast<int>(colour.green)/3  << 8) +
+                                           static_cast<int>(colour.blue)/3  ;
                     window.setPixelColour(x, y, color_value);
                 } else{
                     uint32_t color_value =
@@ -167,3 +182,5 @@ void drawRaytrace(const std::vector<ModelTriangle>& triangles, DrawingWindow &wi
         }
     }
 }
+
+

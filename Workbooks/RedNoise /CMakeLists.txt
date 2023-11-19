@@ -43,6 +43,8 @@ add_executable(RedNoise
         src/readOBJ.h
         src/Ray.h
         src/light.h
+        src/CourseWork.cpp
+        src/testLight.h
 )
 
 if (MSVC)

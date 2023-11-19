@@ -17,6 +17,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise /libs/sdw/TextureMap.cpp" "CMakeFiles/RedNoise.dir/libs/sdw/TextureMap.cpp.o" "gcc" "CMakeFiles/RedNoise.dir/libs/sdw/TextureMap.cpp.o.d"
   "/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise /libs/sdw/TexturePoint.cpp" "CMakeFiles/RedNoise.dir/libs/sdw/TexturePoint.cpp.o" "gcc" "CMakeFiles/RedNoise.dir/libs/sdw/TexturePoint.cpp.o.d"
   "/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise /libs/sdw/Utils.cpp" "CMakeFiles/RedNoise.dir/libs/sdw/Utils.cpp.o" "gcc" "CMakeFiles/RedNoise.dir/libs/sdw/Utils.cpp.o.d"
+  "/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise /src/CourseWork.cpp" "CMakeFiles/RedNoise.dir/src/CourseWork.cpp.o" "gcc" "CMakeFiles/RedNoise.dir/src/CourseWork.cpp.o.d"
   "/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise /src/RedNoise.cpp" "CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o" "gcc" "CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o.d"
   )
 

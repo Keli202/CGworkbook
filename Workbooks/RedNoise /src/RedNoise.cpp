@@ -11,14 +11,15 @@
 #include <CanvasTriangle.h>
 #include <TextureMap.h>
 #include <ModelTriangle.h>
-#include "readOBJ.h"
+
 #include "drawRender.h"
 #include "drawTriangle.h"
 #include "light.h"
+#include "testLight.h"
 #include "Ray.h"
 #include "Camera.h"
 #include "draw.h"
-
+#include "readOBJ.h"
 
 using namespace std;
 using namespace glm;
@@ -39,8 +40,6 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 
 
 //week4
-//std::vector<std::vector<float>> depthBuffer(WIDTH, std::vector<float>(HEIGHT, -numeric_limits<float>::infinity()));
-//std::vector<std::vector<float>> depthBuffer(WIDTH, std::vector<float>(HEIGHT, 0.0f));
 std::vector<std::vector<float>> depthBuffer(WIDTH, std::vector<float>(HEIGHT, std::numeric_limits<float>::infinity()));
 
 void ClearDepthBuffer() {
@@ -52,11 +51,6 @@ void ClearDepthBuffer() {
 }
 
 
-//g
-
-//vec3 Camera_Up = vec3(0.0, 1.0, 0.0);
-//mat3 Camera_Orientation(vec3( 1.0,    0.0,    0.0),vec3( 0.0, 1.0,0.0),vec3( 0.0, 0.0, 1.0));
-//mat3 Camera_Orientation(vec3( 1.0,    0.0,    0.0),Camera_Up,vec3( 0.0, 0.0, 1.0));
 void printMat3(const mat3& mat) {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
@@ -80,8 +74,10 @@ int main(int argc, char *argv[]) {
 //    }
 
     glm::vec3 cameraPosition(0.0f, 0.0f, 4.0f);
-    std::vector<ModelTriangle> modelTriangles=readOBJ("../cornell-box.obj", 0.35);
-   //std::vector<ModelTriangle> modelTriangles=readOBJ("../textured-cornell-box.obj", 0.35);
+     //std::vector<ModelTriangle> modelTriangles=readOBJ("../cornell-box.obj", 0.35);
+     //std::vector<ModelTriangle> modelTriangles=readOBJ("../textured-cornell-box.obj", 0.35);
+     std::vector<ModelTriangle> modelTriangles=readOBJ("../sphere.obj", 0.35);
+
 
     float focal_length = 2.0f;
 
