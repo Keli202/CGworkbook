@@ -183,11 +183,3 @@ void drawRaytrace(const std::vector<ModelTriangle>& triangles, DrawingWindow &wi
     }
 }
 
-
-
-
-
-
-
-
-
