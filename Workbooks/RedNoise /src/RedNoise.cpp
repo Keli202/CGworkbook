@@ -94,6 +94,7 @@ int main(int argc, char *argv[]) {
         //RenderScene(window, modelTriangles,cameraPosition);
 
         //draw_raytrace(modelTriangles, window, cameraPosition);
+        modelTriangles= getVertexNormals(modelTriangles);
         changePosition(modelTriangles,cameraPosition,event,window,depthBuffer);
 
         //RenderScene(window, modelTriangles, cameraPosition, Camera_Orientation,depthBuffer);

@@ -11,8 +11,9 @@ struct ModelTriangle {
 	std::array<TexturePoint, 3> texturePoints{};
 	Colour colour{};
 	glm::vec3 normal{};
-    glm::vec3 vertexNormals[3];
-
+    //glm::vec3 vertexNormals[3];
+    std::array<glm::vec3, 3> vertexNormals{};
+    //Colour vertexColours[3];
 	ModelTriangle();
 	ModelTriangle(const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2, Colour trigColour);
 	friend std::ostream &operator<<(std::ostream &os, const ModelTriangle &triangle);

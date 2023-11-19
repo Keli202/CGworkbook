@@ -41,7 +41,7 @@ RayTriangleIntersection get_closest_intersection(vec3 cameraPosition, vec3 rayDi
                 vec3 intersectionPoint=cameraPosition+possibleSolution.x*rayDirection;
                 closestIntersection.distanceFromCamera = t;
                 closestIntersection.triangleIndex = i;
-                closestIntersection=RayTriangleIntersection(intersectionPoint,closestIntersection.distanceFromCamera,triangle,closestIntersection.triangleIndex);
+                closestIntersection=RayTriangleIntersection(intersectionPoint,closestIntersection.distanceFromCamera,triangle,closestIntersection.triangleIndex,u,v);
 
             }
         }

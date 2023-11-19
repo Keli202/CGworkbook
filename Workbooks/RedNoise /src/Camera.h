@@ -28,7 +28,7 @@ mat3 rotation_x(float t) {
     return mat3(vec3( 1.0,    0.0,    0.0),vec3( 0.0, cos(t),-sin(t)),vec3( 0.0, sin(t), cos(t)));
 }
 
-vec3 lightPosition(0.0f, 0.6f, 0.8f);
+vec3 lightPosition(0.0f, 0.6f, 1.0f);
 
 mat3 lookAt(vec3 cameraPosition, vec3 lookPoint) {
     vec3 forward = normalize(cameraPosition-lookPoint);
@@ -133,8 +133,10 @@ void changePosition(const std::vector<ModelTriangle>& modelTriangles,vec3& camer
     //drawRaytrace(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition);
     if(diffuse) { DrawRaytrace(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition,256.0f);}
     if(specular) { DrawRaytrace(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition,256.0f);}
-    if(gouraud) { DrawRaytrace(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition,256.0f);}
+    if(gouraud) { DrawGouraud(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition,256.0f);}
     if(phong) { DrawRaytrace(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition,256.0f);}
+    //if(gouraud) { drawGouraud(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition,256.0f);}
+   DrawGouraud(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition,256.0f);
 
 
     //if(light) { drawRaytrace(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition);}
