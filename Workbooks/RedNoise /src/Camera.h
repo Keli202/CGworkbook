@@ -134,9 +134,9 @@ void changePosition(const std::vector<ModelTriangle>& modelTriangles,vec3& camer
     if(diffuse) { DrawRaytrace(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition,256.0f);}
     if(specular) { DrawRaytrace(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition,256.0f);}
     if(gouraud) { DrawGouraud(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition,256.0f);}
-    if(phong) { DrawRaytrace(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition,256.0f);}
+    if(phong) { DrawGouraud(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition,256.0f);}
     //if(gouraud) { drawGouraud(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition,256.0f);}
-   DrawGouraud(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition,32.0f);
+   //DrawGouraud(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition,32.0f);
 
 
     //if(light) { drawRaytrace(modelTriangles, window, cameraPosition, Camera_Orientation,lightPosition);}

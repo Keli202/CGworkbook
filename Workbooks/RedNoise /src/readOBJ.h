@@ -203,7 +203,6 @@ std::vector<ModelTriangle> readOBJ(const std::string& filename, float scale) {
     std::vector<TexturePoint> texturePoints;
     std::vector<std::pair<std::string, Colour>> palette;
 
-
     readOBJColour("../textured-cornell-box.mtl", palette);
 
     std::string currentMaterial;
@@ -222,7 +221,7 @@ std::vector<ModelTriangle> readOBJ(const std::string& filename, float scale) {
             std::vector<std::string> v1 = split(tokens[1], '/');
             std::vector<std::string> v2 = split(tokens[2], '/');
             std::vector<std::string> v3 = split(tokens[3], '/');
-            Colour triangleColour(255, 255, 255); // 默认颜色
+            Colour triangleColour(255, 255, 255);
             for (const auto& item : palette) {
                 if (item.first == currentMaterial) {
                     triangleColour = item.second;

@@ -345,30 +345,6 @@ libs/sdw/Utils.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/RedNoise.dir/build.make CMakeFiles/RedNoise.dir/libs/sdw/Utils.cpp.s
 .PHONY : libs/sdw/Utils.cpp.s
 
-src/CourseWork.o: src/CourseWork.cpp.o
-.PHONY : src/CourseWork.o
-
-# target to build an object file
-src/CourseWork.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/RedNoise.dir/build.make CMakeFiles/RedNoise.dir/src/CourseWork.cpp.o
-.PHONY : src/CourseWork.cpp.o
-
-src/CourseWork.i: src/CourseWork.cpp.i
-.PHONY : src/CourseWork.i
-
-# target to preprocess a source file
-src/CourseWork.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/RedNoise.dir/build.make CMakeFiles/RedNoise.dir/src/CourseWork.cpp.i
-.PHONY : src/CourseWork.cpp.i
-
-src/CourseWork.s: src/CourseWork.cpp.s
-.PHONY : src/CourseWork.s
-
-# target to generate assembly for a file
-src/CourseWork.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/RedNoise.dir/build.make CMakeFiles/RedNoise.dir/src/CourseWork.cpp.s
-.PHONY : src/CourseWork.cpp.s
-
 src/RedNoise.o: src/RedNoise.cpp.o
 .PHONY : src/RedNoise.o
 
@@ -429,9 +405,6 @@ help:
 	@echo "... libs/sdw/Utils.o"
 	@echo "... libs/sdw/Utils.i"
 	@echo "... libs/sdw/Utils.s"
-	@echo "... src/CourseWork.o"
-	@echo "... src/CourseWork.i"
-	@echo "... src/CourseWork.s"
 	@echo "... src/RedNoise.o"
 	@echo "... src/RedNoise.i"
 	@echo "... src/RedNoise.s"

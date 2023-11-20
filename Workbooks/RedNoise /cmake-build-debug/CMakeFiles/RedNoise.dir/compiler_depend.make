@@ -2405,8 +2405,6 @@ CMakeFiles/RedNoise.dir/libs/sdw/Utils.cpp.o: /Users/niukeli/Desktop/CG/workbook
   /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk/usr/include/c++/v1/vector \
   /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk/usr/include/c++/v1/__split_buffer
 
-CMakeFiles/RedNoise.dir/src/CourseWork.cpp.o: /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/CourseWork.cpp
-
 CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o: /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/RedNoise.cpp \
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/sdw/CanvasTriangle.h \
   /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/sdw/CanvasPoint.h \
@@ -3043,8 +3041,6 @@ CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o: /Users/niukeli/Desktop/CG/workbook/W
 /Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /libs/glm-0.9.7.2/glm/detail/type_mat4x3.inl:
 
 /Library/Developer/CommandLineTools/usr/lib/clang/12.0.5/include/ptwriteintrin.h:
-
-/Users/niukeli/Desktop/CG/workbook/Workbooks/RedNoise\ /src/CourseWork.cpp:
 
 /Library/Developer/CommandLineTools/usr/lib/clang/12.0.5/include/sgxintrin.h:
 

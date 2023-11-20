@@ -59,6 +59,8 @@ void printMat3(const mat3& mat) {
         cout << endl;
     }
 }
+
+
 int main(int argc, char *argv[]) {
    // week1();
     //loadOBJ("cornell-box.obj", 0.35);
