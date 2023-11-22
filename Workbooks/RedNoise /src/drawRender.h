@@ -214,7 +214,9 @@ void RenderScene(DrawingWindow &window, const std::vector<ModelTriangle>& modelT
         }
         if (isValidTriangle) {
             if (!modelTriangle.colour.name.empty()) {
-                TextureMap texture(modelTriangle.colour.name);
+                //TextureMap texture(modelTriangle.colour.name);
+                TextureMap texture("../texture.ppm");
+
                 for(int j = 0; j < canvasTriangle.vertices.size(); j++) {
                     canvasTriangle.vertices[j].texturePoint.x *= texture.width;
                     canvasTriangle.vertices[j].texturePoint.y *= texture.height;

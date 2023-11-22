@@ -93,7 +93,7 @@ float getIncidenceLighting(const glm::vec3& lightPosition, const glm::vec3& inte
 float getSpecularIntensity(const glm::vec3& lightPosition, const glm::vec3& intersectionPoint,  const glm::vec3& normal, float specularExponent,const glm::vec3 cameraPosition,mat3 Camera_Orientation) {
     glm::vec3 lightDirection = glm::normalize(lightPosition - intersectionPoint);
     glm::vec3 viewDirection = glm::normalize(cameraPosition-intersectionPoint);
-    viewDirection=glm::normalize(Camera_Orientation*viewDirection);
+    //viewDirection=glm::normalize(Camera_Orientation*viewDirection);
     glm::vec3 reflectedRay = glm::reflect(-lightDirection, normal);
     //glm::vec3 reflectedRay = (-lightDirection) - (2.0f * normal) * (glm::dot(glm::normalize(-lightDirection), glm::normalize(normal)));
    // float reflectionAngle = glm::dot(glm::normalize(-lightDirection), glm::normalize(reflectedRay));

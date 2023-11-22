@@ -77,8 +77,8 @@ int main(int argc, char *argv[]) {
 
     glm::vec3 cameraPosition(0.0f, 0.0f, 4.0f);
      //std::vector<ModelTriangle> modelTriangles=readOBJ("../cornell-box.obj", 0.35);
-     //std::vector<ModelTriangle> modelTriangles=readOBJ("../textured-cornell-box.obj", 0.35);
-     std::vector<ModelTriangle> modelTriangles=readOBJ("../sphere.obj", 0.35);
+     std::vector<ModelTriangle> modelTriangles=readOBJ("../textured-cornell-box.obj", 0.35);
+     //std::vector<ModelTriangle> modelTriangles=readOBJ("../sphere.obj", 0.35);
 
 
     float focal_length = 2.0f;

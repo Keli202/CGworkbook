@@ -36,6 +36,7 @@ add_executable(RedNoise
         libs/sdw/TexturePoint.cpp
         libs/sdw/Utils.cpp
         src/RedNoise.cpp
+        src/RayTrace.h
 )
 
 if (MSVC)

@@ -142,6 +142,9 @@
 		<Unit filename="/Users/niukeli/Desktop/CG/workbook/Workbooks/CourseWork/libs/sdw/Utils.h">
 			<Option target="RedNoise"/>
 		</Unit>
+		<Unit filename="/Users/niukeli/Desktop/CG/workbook/Workbooks/CourseWork/src/RayTrace.h">
+			<Option target="RedNoise"/>
+		</Unit>
 		<Unit filename="/Users/niukeli/Desktop/CG/workbook/Workbooks/CourseWork/src/RedNoise.cpp">
 			<Option target="RedNoise"/>
 		</Unit>
