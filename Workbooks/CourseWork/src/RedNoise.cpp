@@ -31,7 +31,8 @@ enum RenderModel{
     Diffuse,
     Specular,
     Gouraud,
-    Phong
+    Phong,
+    Mirror
 };
 TextureMap normalTexture("../texture.ppm");
 static bool orbitEnabled = false;
@@ -49,9 +50,11 @@ static bool orbitEnabled = false;
 //}
 
 void moveLights(float scale, string axis){
+    vector<vec3>lightSource=lightSources();
     for(int i=0;i < lightSource.size();i++){
         if(axis=="x"){
             lightSource[i].x+=scale;
+            cout<<"lights:"<<lightSource[i].x<<endl;
         }else if(axis=="y"){
             lightSource[i].y+=scale;
         }else if(axis=="z"){
@@ -107,7 +110,7 @@ void drawRenderLine(CanvasPoint from, CanvasPoint to, Colour inputColour, Drawin
         if (roundedX < 0 || roundedX >= WIDTH || roundedY < 0 || roundedY >= HEIGHT) {
             continue;
         }
-        if (roundedX > 0 && roundedX <WIDTH && roundedY > 0 && roundedY < HEIGHT) {
+        if (roundedX >= 0 && roundedX <WIDTH && roundedY >= 0 && roundedY < HEIGHT) {
             if (z < depthBuffer[round(x)][round(y)]) {
                 uint32_t Colour = (255 << 24) + (inputColour.red << 16) + (inputColour.green << 8) + inputColour.blue;
                 window.setPixelColour(round(x), round(y), Colour);
@@ -300,14 +303,19 @@ std::vector<ModelTriangle> readOBJ(const std::string& filename, float scale) {
 
     std::string currentMaterial;
     std::string line;
+    bool mirror=false;
+    bool glass=false;
 
+    string material;
     while (getline(file, line)) {
         if (line.empty()) continue;
         std::vector<std::string> tokens = split(line, ' ');
         if (tokens[0] == "v") {
             vec3 vertex(std::stof(tokens[1]) * scale, std::stof(tokens[2]) * scale, std::stof(tokens[3]) * scale);
             vertices.push_back(vertex);
-        } else if (tokens[0] == "vt") {
+        } else if (tokens[0]=="o"){
+            material=tokens[1];
+        }else if (tokens[0] == "vt") {
             TexturePoint texPoint(std::stof(tokens[1]), std::stof(tokens[2]));
             texturePoints.push_back(texPoint);
         } else if (tokens[0] == "f") {
@@ -332,9 +340,15 @@ std::vector<ModelTriangle> readOBJ(const std::string& filename, float scale) {
                 triangle.texturePoints[1] = texturePoints[stoi(v2[1]) - 1];
                 triangle.texturePoints[2] = texturePoints[stoi(v3[1]) - 1];
             }
+            triangle.mirror = mirror;
+            triangle.glass = glass;
             //triangle.normal= calculateNormal(triangle);
+            triangle.material=material;
+            //cout<<"m:"<<triangle.material<<endl;
             triangles.push_back(triangle);
         } else if (tokens[0] == "usemtl") {
+            mirror= (tokens[1]=="Mirror");
+            glass=(tokens[1]=="Glass");
             currentMaterial = tokens[1];
         }
     }
@@ -678,6 +692,8 @@ void handleEvent(const std::vector<ModelTriangle>& modelTriangles,vec3& cameraPo
         else if (event.key.keysym.sym == SDLK_4) { model = Specular;}
         else if (event.key.keysym.sym == SDLK_5) { model = Gouraud;}
         else if (event.key.keysym.sym == SDLK_6) { model = Phong;}
+        else if (event.key.keysym.sym == SDLK_7) { model = Mirror;}
+
 
         else if (event.key.keysym.sym == SDLK_a) { cameraPosition.x += a; }
         else if (event.key.keysym.sym == SDLK_d) { cameraPosition.x -= a; }
@@ -693,8 +709,8 @@ void handleEvent(const std::vector<ModelTriangle>& modelTriangles,vec3& cameraPo
         else if (event.key.keysym.sym == SDLK_RIGHT) { Camera_Orientation = Camera_Orientation * rotation_y(-t); }
         else if (event.key.keysym.sym == SDLK_UP) { Camera_Orientation = Camera_Orientation * rotation_x(t); }
         else if (event.key.keysym.sym == SDLK_DOWN) { Camera_Orientation = Camera_Orientation * rotation_x(-t); }
-        else if (event.key.keysym.sym == SDLK_z) { moveLights(-0.1,"x"); }
-        else if (event.key.keysym.sym == SDLK_x) { moveLights(0.1,"x");  }
+        else if (event.key.keysym.sym == SDLK_z) { moveLights(-1,"x"); }
+        else if (event.key.keysym.sym == SDLK_x) { moveLights(1,"x");  }
         else if (event.key.keysym.sym == SDLK_c) { moveLights(0.1,"y");  }
         else if (event.key.keysym.sym == SDLK_v) { moveLights(-0.1,"y");  }
         else if (event.key.keysym.sym == SDLK_b) { moveLights(0.1,"z");  }
@@ -738,9 +754,11 @@ int main(int argc, char *argv[]) {
 
 
     glm::vec3 cameraPosition(0.0f, 0.0f, 4.0f);
-    std::vector<ModelTriangle> modelTriangles=readOBJ("../cornell-box.obj", 0.35);
-    //std::vector<ModelTriangle> modelTriangles=readOBJ("../textured-cornell-box.obj", 0.35);
-    //std::vector<ModelTriangle> modelTriangles=readOBJ("../sphere.obj", 0.35);
+    std::vector<ModelTriangle> modelTriangles1=readOBJ("../cornell-box.obj", 0.35);
+    std::vector<ModelTriangle> modelTriangles2=readOBJ("../textured-cornell-box.obj", 0.35);
+    std::vector<ModelTriangle> modelTriangles3=readOBJ("../sphere.obj", 0.35);
+    std::vector<ModelTriangle> modelTriangles4=readOBJ("../loveBox3.obj", 0.35);
+    std::vector<ModelTriangle> modelTriangles5=readOBJ("../loveBox.obj", 0.35);
 
 
 
@@ -750,41 +768,47 @@ int main(int argc, char *argv[]) {
     SDL_Event event;
     while (true) {
         if(window.pollForInputEvents(event)) {
-            handleEvent(modelTriangles,cameraPosition,event,window,depthBuffer,model);
+            handleEvent(modelTriangles1,cameraPosition,event,window,depthBuffer,model);
+            handleEvent(modelTriangles2,cameraPosition,event,window,depthBuffer,model);
+            handleEvent(modelTriangles3,cameraPosition,event,window,depthBuffer,model);
+
         }
         window.clearPixels();
         ClearDepthBuffer();
 
-//cout<<"1"<<endl;
         if (orbitEnabled) {
             float angle = -M_PI / 180;
             orbitAndLookAt(cameraPosition, center, angle);
         }
-        modelTriangles= getVertexNormals(modelTriangles);
+        modelTriangles1= getVertexNormals(modelTriangles1);
+        modelTriangles2= getVertexNormals(modelTriangles2);
+        modelTriangles3= getVertexNormals(modelTriangles3);
+        modelTriangles4= getVertexNormals(modelTriangles4);
+        modelTriangles5= getVertexNormals(modelTriangles5);
+
+
         //vec3 lightPosition(0,0,0);
             if (model == WireFrame) {
-                RenderScene(window, modelTriangles, cameraPosition, Camera_Orientation, depthBuffer, true);
+                RenderScene(window, modelTriangles5, cameraPosition, Camera_Orientation, depthBuffer, true);
             }
             else if (model == Render) {
-                RenderScene(window, modelTriangles, cameraPosition, Camera_Orientation, depthBuffer, false);
+                RenderScene(window, modelTriangles5, cameraPosition, Camera_Orientation, depthBuffer, false);
             }
             else if (model == Diffuse) {
-                DrawRay(modelTriangles, window, cameraPosition, Camera_Orientation, lightSource, 256.0f, true, false,
-                        false, false);
+                DrawRay(modelTriangles5, window, cameraPosition, Camera_Orientation,  64.0f);
             }
             else if (model == Specular) {
-                DrawRay(modelTriangles, window, cameraPosition, Camera_Orientation, lightSource, 256.0f, false, true,
-                        false, false);
+                DrawRay(modelTriangles4, window, cameraPosition, Camera_Orientation,  256.0f);
             }
             else if (model == Gouraud) {
-                DrawRay(modelTriangles, window, cameraPosition, Camera_Orientation, lightSource, 256.0f, false, false,
-                        true, false);
+                DrawRay(modelTriangles3, window, cameraPosition, Camera_Orientation, 256.0f);
             }
             else if (model == Phong) {
-                DrawRay(modelTriangles, window, cameraPosition, Camera_Orientation, lightSource, 256.0f, false, false,
-                        false, true);
+                DrawRay(modelTriangles3, window, cameraPosition, Camera_Orientation,  256.0f);
             }
-
+            else if (model == Mirror) {
+                DrawRay(modelTriangles1, window, cameraPosition, Camera_Orientation,  256.0f);
+            }
 
         window.renderFrame();
     }

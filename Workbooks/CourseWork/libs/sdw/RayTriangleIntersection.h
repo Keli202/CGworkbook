@@ -12,7 +12,9 @@ struct RayTriangleIntersection {
     float u;
     float v;
 
-	RayTriangleIntersection();
+
+
+    RayTriangleIntersection();
 	RayTriangleIntersection(const glm::vec3 &point, float distance, const ModelTriangle &triangle, size_t index,float u,float v);
 	friend std::ostream &operator<<(std::ostream &os, const RayTriangleIntersection &intersection);
 };
