@@ -305,6 +305,7 @@ std::vector<ModelTriangle> readOBJ(const std::string& filename, float scale) {
     std::string line;
     bool mirror=false;
     bool glass=false;
+    bool texture=false;
 
     string material;
     while (getline(file, line)) {
@@ -349,7 +350,14 @@ std::vector<ModelTriangle> readOBJ(const std::string& filename, float scale) {
         } else if (tokens[0] == "usemtl") {
             mirror= (tokens[1]=="Mirror");
             glass=(tokens[1]=="Glass");
+            //texture=(tokens[1]=="Texture");
+            //cout<<"t:"<<texture<<endl;
             currentMaterial = tokens[1];
+            if(currentMaterial=="Texture"){
+                texture=true;
+                cout<<"1"<<endl;
+            }else {//cout<<"2"<<endl;
+                 texture =false;}
         }
     }
 

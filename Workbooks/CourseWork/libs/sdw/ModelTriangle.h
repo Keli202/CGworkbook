@@ -14,6 +14,7 @@ struct ModelTriangle {
     std::array<glm::vec3, 3> vertexNormals{};
     bool mirror;
     bool glass;
+    bool texture;
     std::string material;
 
 	ModelTriangle();
