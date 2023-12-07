@@ -31,6 +31,8 @@ std::vector<glm::vec3> lightSources() {
         lightSources.push_back(glm::vec3(x, height, z));
     }
     return lightSources;
+
+
 }
 
 
@@ -553,110 +555,34 @@ Colour CalculateColor(const vector<ModelTriangle>& triangles,RayTriangleIntersec
         colour.blue = glm::mix(goldBaseColour.blue, reflectedColour.blue, reflectivity);
         //cout<<"metal"<<colour<<endl;
     }
+    else if(intersection.intersectedTriangle.texture){
+        TextureMap& textureFile=TextureFile1;
+
+       // cout<<"1"<<endl;
+
+        float u = intersection.u;
+        float v = intersection.v;
+        float w = 1.0f - u - v;
+        float textureX = (w * intersection.intersectedTriangle.texturePoints[0].x + u * intersection.intersectedTriangle.texturePoints[1].x + v * intersection.intersectedTriangle.texturePoints[2].x) * textureFile.width;
+        float textureY = (w * intersection.intersectedTriangle.texturePoints[0].y + u * intersection.intersectedTriangle.texturePoints[1].y + v * intersection.intersectedTriangle.texturePoints[2].y) * textureFile.height;
 
 
-//    else if(intersection.intersectedTriangle.texture){
-//        TextureMap& textureFile=TextureFile1;
-//
-//       // cout<<"1"<<endl;
-//
-//        float u = intersection.u;
-//        float v = intersection.v;
-//        float w = 1.0f - u - v;
-//        float textureX = (w * intersection.intersectedTriangle.texturePoints[0].x + u * intersection.intersectedTriangle.texturePoints[1].x + v * intersection.intersectedTriangle.texturePoints[2].x) * textureFile.width;
-//        float textureY = (w * intersection.intersectedTriangle.texturePoints[0].y + u * intersection.intersectedTriangle.texturePoints[1].y + v * intersection.intersectedTriangle.texturePoints[2].y) * textureFile.height;
-//
-//
-//        textureX = std::fmod(textureX, textureFile.width);
-//        textureY = std::fmod(textureY, textureFile.height);
-//
-//
-//        uint32_t colour_val = textureFile.pixels[static_cast<int>(textureY) * textureFile.width + static_cast<int>(textureX)];
-//        int red = (colour_val >> 16) & 0xFF;
-//        int green = (colour_val >> 8) & 0xFF;
-//        int blue = colour_val & 0xFF;
-//
-//
-//        colour.red = red;
-//        colour.green = green;
-//        colour.blue = blue;
-//
-//
-//
-//
-//
-//
-//
-//
-////            float proportion0 = 1 - (intersection.u + intersection.v);
-////            float proportion1 = intersection.u;
-////            float proportion2 = intersection.v;
-////            TexturePoint tp0 = intersection.intersectedTriangle.texturePoints[0];
-////            TexturePoint tp1 = intersection.intersectedTriangle.texturePoints[1];
-////            TexturePoint tp2 = intersection.intersectedTriangle.texturePoints[2];
-////
-////            TexturePoint texturePoint;
-////            texturePoint.x = (proportion0 * tp0.x) + (proportion1 * tp1.x) + (proportion2 * tp2.x);
-////            texturePoint.y = (proportion0 * tp0.y) + (proportion1 * tp1.y) + (proportion2 * tp2.y);
-////
-////
-////            ModelTriangle t = intersection.intersectedTriangle;
-////
-////            float x = ((1 - intersection.u - intersection.v) * t.texturePoints[0].x + intersection.u * t.texturePoints[1].x + intersection.v * t.texturePoints[2].x);
-////            float y = ((1 - intersection.u - intersection.v) * t.texturePoints[0].y + intersection.u * t.texturePoints[1].y +intersection.v * t.texturePoints[2].y);
-////
-////            x *= TextureFile1.width;
-////            y *= TextureFile1.height;
-////            uint32_t colour_val = TextureFile1.pixels[round(x) + (TextureFile1.width * round(y))];
-////
-////           //uint32_t colour_val = TextureFile1.pixels[round(texturePoint.x) + (TextureFile1.width * round(texturePoint.y))];
-////
-////
-//////
-//////            const ModelTriangle& triangle = intersection.intersectedTriangle;
-//////            float w = 1.0f - intersection.u - intersection.v;
-//////
-//////            TexturePoint texturePoint;
-//////            texturePoint.x = w * triangle.texturePoints[0].x + intersection.u * triangle.texturePoints[1].x + intersection.v * triangle.texturePoints[2].x;
-//////            texturePoint.y = w * triangle.texturePoints[0].y + intersection.u * triangle.texturePoints[1].y + intersection.v * triangle.texturePoints[2].y;
-//////
-//////            int x = static_cast<int>(texturePoint.x * TextureFile.width) %TextureFile.width;
-//////            int y = static_cast<int>(texturePoint.y * TextureFile.height) % TextureFile.height;
-//////            uint32_t colour_val =  TextureFile.pixels[y * TextureFile.width + x];
-////
-////            int red = (colour_val >> 16) & 0xFF;
-////            int green = (colour_val >> 8) & 0xFF;
-////            int blue = colour_val & 0xFF;
-////            colour.red = red;
-////            colour.green = green;
-////            colour.blue = blue;
-//
-//
-////            float u = intersection.u;
-////            float v = intersection.v;
-////            float w = 1.0f - u - v; // The third barycentric coordinate
-////            TexturePoint tp0 = intersection.intersectedTriangle.texturePoints[0];
-////            TexturePoint tp1 = intersection.intersectedTriangle.texturePoints[1];
-////            TexturePoint tp2 = intersection.intersectedTriangle.texturePoints[2];
-////            float textureX = (w * tp0.x + u * tp1.x + v * tp2.x) * (textureFile.width - 1);
-////            float textureY = (w * tp0.y + u * tp1.y + v * tp2.y) * (textureFile.height - 1);
-////
-////            // Ensure we don't go out of bounds
-////            textureX = fmod(textureX, textureFile.width);
-////            textureY = fmod(textureY, textureFile.height);
-////
-////            // Sample the texture color
-////            uint32_t colour_val = textureFile.pixels[static_cast<int>(textureY) * textureFile.width + static_cast<int>(textureX)];
-////            int red = (colour_val >> 16) & 0xFF;
-////            int green = (colour_val >> 8) & 0xFF;
-////            int blue = colour_val & 0xFF;
-////            colour.red = red;
-////            colour.green = green;
-////            colour.blue = blue;
-//
-//
-//
-//    }
+        textureX = std::fmod(textureX, textureFile.width);
+        textureY = std::fmod(textureY, textureFile.height);
+
+
+        uint32_t colour_val = textureFile.pixels[static_cast<int>(textureY) * textureFile.width + static_cast<int>(textureX)];
+        int red = (colour_val >> 16) & 0xFF;
+        int green = (colour_val >> 8) & 0xFF;
+        int blue = colour_val & 0xFF;
+
+
+        colour.red = red;
+        colour.green = green;
+        colour.blue = blue;
+
+
+    }
 
 
 

@@ -5,10 +5,14 @@
 #include "ModelTriangle.h"
 
 struct RayTriangleIntersection {
-	glm::vec3 intersectionPoint;
-	float distanceFromCamera;
-	ModelTriangle intersectedTriangle;
-	size_t triangleIndex;
+
+    glm::vec3 intersectionPoint;
+    float distanceFromCamera;
+    ModelTriangle intersectedTriangle;
+    size_t triangleIndex;
+    float u;
+    float v;
+    glm::vec2 Texture;
 
 	RayTriangleIntersection();
 	RayTriangleIntersection(const glm::vec3 &point, float distance, const ModelTriangle &triangle, size_t index);

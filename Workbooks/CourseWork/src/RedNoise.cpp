@@ -29,8 +29,9 @@ enum RenderModel{
     WireFrame,
     Render,
     Diffuse,
+    Texture,
     Specular,
-    Gouraud,
+    Soft,
     Phong,
     Mirror
 };
@@ -54,7 +55,7 @@ void moveLights(float scale, string axis){
     for(int i=0;i < lightSource.size();i++){
         if(axis=="x"){
             lightSource[i].x+=scale;
-            cout<<"lights:"<<lightSource[i].x<<endl;
+            //cout<<"lights:"<<lightSource[i].x<<endl;
         }else if(axis=="y"){
             lightSource[i].y+=scale;
         }else if(axis=="z"){
@@ -413,289 +414,6 @@ void orbitAndLookAt(vec3& cameraPosition, vec3 orbitCenter, float angle) {
 
 
 
-//RayTriangleIntersection Get_closest_intersection(vec3 cameraPosition, vec3 rayDirection, const std::vector<ModelTriangle>& triangles) {
-//    RayTriangleIntersection closestIntersection;
-//    closestIntersection.distanceFromCamera = numeric_limits<float>::infinity();
-//    for(int i = 0; i < triangles.size(); i++) {
-//        ModelTriangle triangle = triangles[i];
-//
-//        vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
-//        vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
-//        vec3 spVector = cameraPosition - triangle.vertices[0];
-//        mat3 DEMatrix(-rayDirection, e0, e1);
-//        vec3 possibleSolution = inverse(DEMatrix) * spVector;
-//
-//        float t = possibleSolution.x, u = possibleSolution.y, v = possibleSolution.z;
-//        if(u >= 0.0 && u <= 1.0 && v >= 0.0 && v <= 1.0 && (u + v) <= 1.0 && t > 0) {
-//            if(t < closestIntersection.distanceFromCamera) {
-//                vec3 intersectionPoint=cameraPosition+possibleSolution.x*rayDirection;
-//                closestIntersection.distanceFromCamera = t;
-//                closestIntersection.triangleIndex = i;
-//                closestIntersection=RayTriangleIntersection(intersectionPoint,closestIntersection.distanceFromCamera,triangle,closestIntersection.triangleIndex,u,v);
-//            }
-//        }
-//    }
-//
-//    return closestIntersection;
-//}
-//bool IsShadow(RayTriangleIntersection intersection, vec3 lightPosition,const vector<ModelTriangle>& triangles){
-//    vec3 shadow_ray= normalize(lightPosition-intersection.intersectionPoint);
-//    for(int i = 0; i < triangles.size(); i++) {
-//        ModelTriangle triangle = triangles[i];
-//
-//        vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
-//        vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
-//        vec3 spVector = intersection.intersectionPoint - triangle.vertices[0];
-//        mat3 DEMatrix(-shadow_ray, e0, e1);
-//        vec3 possibleSolution = inverse(DEMatrix) * spVector;
-//
-//        float t = possibleSolution.x, u = possibleSolution.y, v = possibleSolution.z;
-//        if(u >= 0.0 && u <= 1.0 && v >= 0.0 && v <= 1.0 && (u + v) <= 1.0 &&t>0.01) {
-//            if(t < length(lightPosition-intersection.intersectionPoint)&& i!=intersection.triangleIndex) {
-//                return true;
-//            }
-//        }
-//    }
-//    return false;
-//}
-//
-//glm::vec3 calculateNormal(const ModelTriangle& triangle,RayTriangleIntersection &intersection) {
-//    glm::vec3 edge1 = triangle.vertices[1] - triangle.vertices[0];
-//    glm::vec3 edge2 = triangle.vertices[2] - triangle.vertices[0];
-//    glm::vec3 normal = glm::cross(edge1, edge2);
-//    intersection.intersectedTriangle.normal= glm::normalize(normal);
-//    return intersection.intersectedTriangle.normal;
-//}
-//glm::vec3 calculateFaceNormal(const ModelTriangle& triangle) {
-//    glm::vec3 edge1 = triangle.vertices[1] - triangle.vertices[0];
-//    glm::vec3 edge2 = triangle.vertices[2] - triangle.vertices[0];
-//    glm::vec3 normal = glm::cross(edge1, edge2);
-//    return glm::normalize(normal);
-//}
-//
-//
-//float getProximityLighting(const glm::vec3& lightPosition, const glm::vec3& intersectionPoint) {
-//    float distance = glm::length(lightPosition - intersectionPoint);
-//    return std::min(1.0f, std::max(0.0f, 10.0f / static_cast<float>(4 * M_PI * distance * distance)));
-//}
-//
-//float getIncidenceLighting(const glm::vec3& lightPosition, const glm::vec3& intersectionPoint, const glm::vec3& normal) {
-//    glm::vec3 lightDirection = glm::normalize(lightPosition - intersectionPoint);
-//    return std::max(0.0f, glm::dot(glm::normalize(normal), lightDirection));
-//    //return glm::clamp(glm::dot(glm::normalize(normal), lightDirection), 0.0f, 1.0f);
-//}
-//
-//float getSpecularIntensity(const glm::vec3& lightPosition, const glm::vec3& intersectionPoint,  const glm::vec3& normal, float specularExponent,const glm::vec3 cameraPosition,mat3 Camera_Orientation) {
-//    glm::vec3 lightDirection = glm::normalize(lightPosition - intersectionPoint);
-//    glm::vec3 viewDirection = glm::normalize(cameraPosition-intersectionPoint);
-//    //viewDirection=glm::normalize(Camera_Orientation*viewDirection);
-//    glm::vec3 reflectedRay = glm::reflect(-lightDirection, normal);
-//    //glm::vec3 reflectedRay = (-lightDirection) - (2.0f * normal) * (glm::dot(glm::normalize(-lightDirection), glm::normalize(normal)));
-//    // float reflectionAngle = glm::dot(glm::normalize(-lightDirection), glm::normalize(reflectedRay));
-//    float reflectionAngle = glm::dot(glm::normalize(viewDirection), glm::normalize(reflectedRay));
-//    reflectionAngle=glm::max(0.0f,reflectionAngle);
-//    float SpecularLighting = pow(reflectionAngle, specularExponent);
-//    return SpecularLighting;
-//}
-//
-//float getBrightness(const RayTriangleIntersection &intersection,const glm::vec3 &lightPosition,const glm::vec3 &normal,const glm::vec3 cameraPosition,float specularExponent){
-//    //proximity
-//    float ProximityLighting= getProximityLighting(lightPosition,intersection.intersectionPoint);
-//
-//    //incidence
-//    float IncidenceLighting   = getIncidenceLighting(lightPosition,intersection.intersectionPoint,normal);
-//
-//    //get brightness
-//    float brightness = (ProximityLighting * IncidenceLighting);
-//
-//    //ambient
-//    brightness = glm::clamp(brightness/lightSources.size(), 0.2f, 1.0f);
-//
-//    return brightness;
-//}
-//
-//
-//
-//
-//
-//vector<ModelTriangle> getVertexNormals(vector<ModelTriangle> &triangles) {
-//    for ( ModelTriangle& triangle : triangles) {
-//        glm::vec3 normal = calculateFaceNormal(triangle);
-//        triangle.normal = glm::normalize(normal);
-//    }
-//
-//    for (ModelTriangle& triangle : triangles) {
-//        for (int i = 0; i < 3; ++i) {
-//            glm::vec3 vertexNormal = glm::vec3(0.0f);
-//            int count = 0;
-//            // Find triangles that share the same vertices
-//            for (ModelTriangle& sharedTriangle : triangles) {
-//                glm::vec3 vertex = triangle.vertices[i];
-//                if (vertex == sharedTriangle.vertices[0]||vertex == sharedTriangle.vertices[1]||vertex == sharedTriangle.vertices[2]) {
-//                    vertexNormal += sharedTriangle.normal;
-//                    count++;
-//                }
-//            }
-//            if (count > 0) {
-//                glm::vec3 averageNormal = glm::normalize(vertexNormal / static_cast<float>(count));
-//                triangle.vertexNormals[i] = averageNormal;
-//
-//            }
-//        }
-//    }
-//    return triangles;
-//}
-//
-//
-//
-//
-//
-//
-//glm::vec3 getInterpolatedNormal(const ModelTriangle &triangle, float u, float v) {
-//    float w = 1.0f - u - v;
-//    glm::vec3 interpolatedNormal = w * triangle.vertexNormals[0] + u * triangle.vertexNormals[1] + v * triangle.vertexNormals[2];
-//    return glm::normalize(interpolatedNormal);
-//}
-//
-//
-//
-//
-//float getVertexBrightness(const RayTriangleIntersection &intersection, const glm::vec3 &lightPosition, const glm::vec3 &normal, const glm::vec3 &cameraPosition, float specularExponent,mat3 Camera_Orientation) {
-//    float ProximityLighting= getProximityLighting(lightPosition,intersection.intersectionPoint);
-//
-//    //incidence
-//    float IncidenceLighting   = getIncidenceLighting(lightPosition,intersection.intersectionPoint,normal);
-//
-//    float specularLighting = getSpecularIntensity(lightPosition,intersection.intersectionPoint,normal,specularExponent,cameraPosition,Camera_Orientation);
-//
-//    //get brightness
-//    float ambientIntensity = 0.1f;
-//
-//
-//    float brightness = ambientIntensity + ProximityLighting*IncidenceLighting + specularLighting;
-//
-//    brightness = glm::clamp(brightness/lightSources.size(), 0.0f, 1.0f);
-//
-//    return brightness;
-//}
-//
-//
-//
-//Colour gouraudShading(const RayTriangleIntersection &intersection, const glm::vec3 &lightPosition, const glm::vec3 &cameraPosition, float specularExponent,mat3 Camera_Orientation) {
-//    const ModelTriangle &triangle = intersection.intersectedTriangle;
-//
-//
-//    std::vector<float> vertexLightIntensities(3);
-//    for (int i = 0; i < 3; ++i) {
-//        glm::vec3 vertex = triangle.vertices[i];
-//        glm::vec3 vertexNormal = triangle.vertexNormals[i];
-//
-//        float vertexBrightness = getVertexBrightness(intersection, lightPosition, vertexNormal, cameraPosition, specularExponent,Camera_Orientation);
-//        vertexLightIntensities[i] = vertexBrightness;
-//    }
-//
-//    float u = intersection.u;
-//    float v = intersection.v;
-//    float w = 1.0f - u - v;
-//    float interpolatedLightIntensity = w * vertexLightIntensities[0] + u * vertexLightIntensities[1] + v * vertexLightIntensities[2];
-//
-//    interpolatedLightIntensity=glm::clamp(interpolatedLightIntensity,0.0f,1.0f);
-//    Colour colour = intersection.intersectedTriangle.colour;
-//    colour.red = static_cast<uint8_t>(colour.red * interpolatedLightIntensity);
-//    colour.green = static_cast<uint8_t>(colour.green * interpolatedLightIntensity);
-//    colour.blue = static_cast<uint8_t>(colour.blue * interpolatedLightIntensity);
-//    //cout<<"c:"<<colour<<endl;
-//
-//    return colour;
-//}
-//
-//
-//
-//
-//
-//
-//Colour phongShading(RayTriangleIntersection &intersection, glm::vec3 &lightPosition, glm::vec3 &cameraPosition, float specularExponent,mat3 Camera_Orientation) {
-//    glm::vec3 interpolatedNormal = getInterpolatedNormal(intersection.intersectedTriangle, intersection.u, intersection.v);
-//
-//    float ProximityLighting= getProximityLighting(lightPosition,intersection.intersectionPoint);
-//    float IncidenceLighting   = getIncidenceLighting(lightPosition,intersection.intersectionPoint,interpolatedNormal);
-//    float specularLighting = getSpecularIntensity(lightPosition,intersection.intersectionPoint,interpolatedNormal,specularExponent,cameraPosition,Camera_Orientation);
-//
-//    Colour colour = intersection.intersectedTriangle.colour;
-//    colour.red = static_cast<uint8_t>(std::min(colour.red * ProximityLighting*IncidenceLighting + specularLighting * 255, 255.0f));
-//    colour.green = static_cast<uint8_t>(std::min(colour.green * ProximityLighting*IncidenceLighting + specularLighting * 255, 255.0f));
-//    colour.blue = static_cast<uint8_t>(std::min(colour.blue * ProximityLighting*IncidenceLighting + specularLighting * 255, 255.0f));
-//
-//    return colour;
-//}
-//
-//
-//glm::vec3 getRayDirection(float x,float y,glm::vec3 camera_position,mat3 Camera_Orientation){
-//    float scalingFactor = 150.0f;
-//    float focal_length = 2.0f;
-//
-//    double x1 = (x- camera_position.x - (WIDTH / 2)) / (scalingFactor * focal_length);
-//    double y1 = -(y-camera_position.y - (HEIGHT / 2)) / (scalingFactor * focal_length);
-//    double z1 = -focal_length ;
-//
-//    glm::vec3 ray_direction = glm::vec3(x1 , y1 , z1);
-//    glm::vec3 direction= normalize(Camera_Orientation*ray_direction);
-//    return direction;
-//}
-//
-//
-//void DrawRay(const std::vector<ModelTriangle>& triangles, DrawingWindow &window, glm::vec3 camera_position,mat3 Camera_Orientation,vec3 &lightPosition,float specularExponent,
-//             bool diffuse,bool specular,bool gouraud,bool phong) {
-//    for (int x = 0; x < WIDTH; x++) {
-//        for (int y = 0; y < HEIGHT; y++) {
-//            glm::vec3 rayDirection= getRayDirection(x,y,camera_position,Camera_Orientation);
-//            RayTriangleIntersection intersection = Get_closest_intersection(camera_position, rayDirection, triangles);
-//            if (!isinf(intersection.distanceFromCamera)) {
-//                bool inShadow = false;
-//                Colour colour;
-//                if(gouraud){
-//                    colour = gouraudShading(intersection, lightPosition, camera_position, specularExponent,Camera_Orientation);
-//                }else if(phong){
-//                    colour = phongShading(intersection,lightPosition,camera_position,specularExponent,Camera_Orientation);
-//                }else if (diffuse || specular){
-//                     inShadow = IsShadow(intersection, lightPosition, triangles);
-//
-//                    colour = intersection.intersectedTriangle.colour;
-//                    glm::vec3 normal = calculateNormal(intersection.intersectedTriangle,intersection);
-//                    float brightness = getBrightness(intersection,lightPosition,normal,camera_position,specularExponent);
-//                    float SpecularLighting = getSpecularIntensity(lightPosition,intersection.intersectionPoint,normal,specularExponent,camera_position,Camera_Orientation);
-//
-//                    if(diffuse){
-//                        colour.red *=std::min(brightness ,1.0f);
-//                        colour.green *=std::min(brightness ,1.0f);
-//                        colour.blue *=std::min(brightness ,1.0f);
-//                    }else if(specular){
-//                        colour.red = std::min(static_cast<int>(colour.red * brightness+SpecularLighting * 255), 255);
-//                        colour.green = std::min(static_cast<int>(colour.green * brightness+SpecularLighting * 255), 255);
-//                        colour.blue = std::min(static_cast<int>(colour.blue * brightness+SpecularLighting * 255), 255);
-//                    }
-//
-//                }
-//                if (inShadow) {
-//                    cout<<"1"<<endl;
-//                    uint32_t color_value = (255 << 24) + (static_cast<int>(colour.red) / 3 << 16) +
-//                                           (static_cast<int>(colour.green) / 3 << 8) +
-//                                           static_cast<int>(colour.blue) / 3;
-//                    window.setPixelColour(x, y, color_value);
-//                }else {
-//                    uint32_t color_value =
-//                            (255 << 24) + (static_cast<int>(colour.red) << 16) + (static_cast<int>(colour.green) << 8) +
-//                            static_cast<int>(colour.blue);
-//                    window.setPixelColour(x, y, color_value);
-//                }
-//
-//            }
-//        }
-//    }
-//}
-//
-//
-
 
 
 void handleEvent(const std::vector<ModelTriangle>& modelTriangles,vec3& cameraPosition,SDL_Event event, DrawingWindow &window,std::vector<std::vector<float>> depthBuffer, RenderModel& model) {
@@ -706,9 +424,9 @@ void handleEvent(const std::vector<ModelTriangle>& modelTriangles,vec3& cameraPo
         if (event.key.keysym.sym == SDLK_1) {model = WireFrame;}
         else if (event.key.keysym.sym == SDLK_2) { model = Render;}
         else if (event.key.keysym.sym == SDLK_3) { model = Diffuse;}
-        else if (event.key.keysym.sym == SDLK_4) { model = Specular;}
-        else if (event.key.keysym.sym == SDLK_5) { model = Gouraud;}
-        else if (event.key.keysym.sym == SDLK_6) { model = Phong;}
+        else if (event.key.keysym.sym == SDLK_4) { model = Texture;}
+        else if (event.key.keysym.sym == SDLK_5) { model = Specular;}
+        else if (event.key.keysym.sym == SDLK_6) { model = Soft;}
         else if (event.key.keysym.sym == SDLK_7) { model = Mirror;}
 
 
@@ -726,12 +444,12 @@ void handleEvent(const std::vector<ModelTriangle>& modelTriangles,vec3& cameraPo
         else if (event.key.keysym.sym == SDLK_RIGHT) { Camera_Orientation = Camera_Orientation * rotation_y(-t); }
         else if (event.key.keysym.sym == SDLK_UP) { Camera_Orientation = Camera_Orientation * rotation_x(t); }
         else if (event.key.keysym.sym == SDLK_DOWN) { Camera_Orientation = Camera_Orientation * rotation_x(-t); }
-        else if (event.key.keysym.sym == SDLK_z) { moveLights(-1,"x"); }
-        else if (event.key.keysym.sym == SDLK_x) { moveLights(1,"x");  }
-        else if (event.key.keysym.sym == SDLK_c) { moveLights(0.1,"y");  }
-        else if (event.key.keysym.sym == SDLK_v) { moveLights(-0.1,"y");  }
-        else if (event.key.keysym.sym == SDLK_b) { moveLights(0.1,"z");  }
-        else if (event.key.keysym.sym == SDLK_n) { moveLights(-0.1,"z");  }
+        else if (event.key.keysym.sym == SDLK_z) { lightPosition.x -= lightMoveStep; }
+        else if (event.key.keysym.sym == SDLK_x) { lightPosition.x += lightMoveStep; }
+        else if (event.key.keysym.sym == SDLK_c) { lightPosition.y += lightMoveStep; }
+        else if (event.key.keysym.sym == SDLK_v) { lightPosition.y -= lightMoveStep; }
+        else if (event.key.keysym.sym == SDLK_b) { lightPosition.z -= lightMoveStep; }
+        else if (event.key.keysym.sym == SDLK_n) { lightPosition.z += lightMoveStep; }
         else if (event.key.keysym.sym == SDLK_r) {
             float r = sqrt(cameraPosition.x * cameraPosition.x + cameraPosition.z * cameraPosition.z);
             float theta = atan2(cameraPosition.z, cameraPosition.x);
@@ -782,9 +500,14 @@ int main(int argc, char *argv[]) {
     DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
     RenderModel model = None;
 
+
+    bool animationCompleted = false;
+
     SDL_Event event;
-    while (true) {
-        if(window.pollForInputEvents(event)) {
+   // while (true) {
+   while (!animationCompleted) {
+
+            if(window.pollForInputEvents(event)) {
             handleEvent(modelTriangles1,cameraPosition,event,window,depthBuffer,model);
             handleEvent(modelTriangles2,cameraPosition,event,window,depthBuffer,model);
             handleEvent(modelTriangles3,cameraPosition,event,window,depthBuffer,model);
@@ -806,28 +529,184 @@ int main(int argc, char *argv[]) {
 
         //vec3 lightPosition(0,0,0);
             if (model == WireFrame) {
-                RenderScene(window, modelTriangles5, cameraPosition, Camera_Orientation, depthBuffer, true);
+                RenderScene(window, modelTriangles1, cameraPosition, Camera_Orientation, depthBuffer, true);
             }
             else if (model == Render) {
                 RenderScene(window, modelTriangles2, cameraPosition, Camera_Orientation, depthBuffer, false);
             }
             else if (model == Diffuse) {
-                DrawRay(modelTriangles5, window, cameraPosition, Camera_Orientation,  64.0f);
+                DrawRay(modelTriangles1, window, cameraPosition, Camera_Orientation,  256.0f);
+            }
+            else if (model == Texture) {
+                DrawRay(modelTriangles5, window, cameraPosition, Camera_Orientation,  256.0f);
             }
             else if (model == Specular) {
-                DrawRay(modelTriangles4, window, cameraPosition, Camera_Orientation,  256.0f);
+                DrawRay(modelTriangles1, window, cameraPosition, Camera_Orientation, 256.0f);
             }
-            else if (model == Gouraud) {
-                DrawRay(modelTriangles3, window, cameraPosition, Camera_Orientation, 256.0f);
-            }
-            else if (model == Phong) {
+            else if (model == Soft) {
                 DrawRay(modelTriangles1, window, cameraPosition, Camera_Orientation,  256.0f);
             }
             else if (model == Mirror) {
                 DrawRay(modelTriangles2, window, cameraPosition, Camera_Orientation,  256.0f);
             }
 
+
+//        for (int frameCount = 0; frameCount < 1000; frameCount++) {
+//            window.clearPixels();
+//            int n_zero = 5;
+//            RenderScene(window, modelTriangles1, cameraPosition, Camera_Orientation, depthBuffer, true);
+//            string name = string(n_zero - to_string(frameCount).length(), '0') + to_string(frameCount);
+//            window.savePPM("../output1/"+name+".ppm");
+//            cout << "saved " << frameCount << endl;
+//
+//                orbitEnabled = !orbitEnabled;
+//                if (orbitEnabled) {
+//                    orbitAndLookAt(cameraPosition, center, M_PI / 180);
+//                }
+//
+//
+//        }
+
+
+       for (int frameCount = 0; frameCount < 2; frameCount++) {
+           window.clearPixels();
+           int n_zero = 5;
+           DrawRay(modelTriangles2, window, cameraPosition, Camera_Orientation,  256.0f);
+
+           //RenderScene(window, modelTriangles1, cameraPosition, Camera_Orientation, depthBuffer, false);
+           string name = string(n_zero - to_string(frameCount).length(), '0') + to_string(frameCount);
+           window.savePPM("../output3ray/"+name+".ppm");
+           cout << "saved " << frameCount << endl;
+
+//           if(frameCount < 10) {
+//               //DrawRay(modelTriangles1, window, cameraPosition, Camera_Orientation,  256.0f);
+//               moveLights(-0.05f, "x");
+//
+//           }
+//        else if(frameCount < 30) {
+//               //DrawRay(modelTriangles1, window, cameraPosition, Camera_Orientation,  256.0f);
+//               moveLights(0.05f, "x");
+//
+//           }
+//        else if(frameCount < 40) {
+//              // DrawRay(modelTriangles1, window, cameraPosition, Camera_Orientation,  256.0f);
+//               moveLights(-0.05f, "y");
+//
+//           }else if(frameCount < 60) {
+//              // DrawRay(modelTriangles1, window, cameraPosition, Camera_Orientation,  256.0f);
+//               moveLights(-0.05f, "z");
+//
+//           }
+
+
+       }
+
+//
+//
+//
+//        for (int frameCount = 0; frameCount < 200; frameCount++) {
+//
+//           for (int frame = 0; frame < frameCount; ++frame) {
+//               window.clearPixels();
+//        //renderRasterising(mirrorTriangle2,focalLength,window,400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("../output14/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        float speed = -3.8 * M_PI / 180;
+//        cameraPosition = cameraPosition * mat3(
+//                vec3(cos(speed), 0.0, sin(speed)),
+//                vec3(0.0, 1.0, 0.0),
+//                vec3(-sin(speed), 0.0, cos(speed))
+//        );
+//        cameraOrientation = cameraOrientation * mat3(
+//                vec3(cos(speed), 0.0, sin(speed)),
+//                vec3(0.0, 1.0, 0.0),
+//                vec3(-sin(speed), 0.0, cos(speed))
+//        );
+//        look_At();
+//    }
+//    for (int frame = 0; frame < frameCount; ++frame) {
+//        window.clearPixels();
+//        renderRasterising(triangles, focalLength, window, 400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("../output3/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        if(frame < 12) {
+//            cameraPosition.x -= 0.06;
+//        }
+//        else if(frame < 36) {
+//            cameraPosition.x += 0.06;
+//        }
+//        else if(frame < 48) {
+//            cameraPosition.x -= 0.06;
+//        }
+//    }
+//
+//    for (int frame = 0; frame < frameCount; ++frame) {
+//        window.clearPixels();
+//        renderRasterising(triangles, focalLength, window, 400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("../output4/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        if(frame < 12) {
+//            cameraPosition.y -= 0.06;
+//        }
+//        else if(frame < 36) {
+//            cameraPosition.y += 0.06;
+//        }
+//        else if(frame < 48) {
+//            cameraPosition.y -= 0.06;
+//        }
+//    }
+//    for (int frame = 0; frame < frameCount; ++frame) {
+//        window.clearPixels();
+//        renderRasterising(triangles, focalLength, window, 400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("../output2/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        if(frame < 12) {
+//            cameraPosition.z += 0.06;
+//        }
+//        else if(frame < 36) {
+//            cameraPosition.z -= 0.06;
+//        }
+//        else if(frame < 48) {
+//            cameraPosition.z -= 0.06;
+//        }
+//    }
+//
+//    for (int frame = 0; frame < frameCount; ++frame) {
+//        window.clearPixels();
+//        renderRayTracedScene(triangles2,window,focalLength,400.0f);
+//        string frameNumber = string(n_zero - to_string(frame).length(), '0') + to_string(frame);
+//        window.savePPM("../output8/" + frameNumber + ".ppm");
+//        cout << "saved " << frame << endl;
+//        cameraPosition.x -= 0.005f;
+//        cameraPosition.z -= 0.02f;
+//        cameraPosition.y += 0.004f;
+//    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            animationCompleted = true;
+
         window.renderFrame();
+
+
+
     }
 
 
