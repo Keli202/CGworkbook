@@ -507,19 +507,22 @@ Colour CalculateColor(const vector<ModelTriangle>& triangles,RayTriangleIntersec
 
     }else if(intersection.intersectedTriangle.texture&&depth<5){
         textureFile=TextureFile1;
-
-        cout<<"hhh:"<<endl;
-        int pixelX = static_cast<int>(intersection.Texture.x * textureFile.width) % static_cast<int>(textureFile.width);
-        int pixelY = static_cast<int>(intersection.Texture.y * textureFile.height) % static_cast<int>(textureFile.height);
-
-
-        //uint32_t pixel =TextureFile1     ;
-        uint32_t pixelColor = textureFile.getPixel(pixelX, pixelY);
+        float u = intersection.u;
+        float v = intersection.v;
+        float w = 1.0f - u - v;
+        float textureX = (w * intersection.intersectedTriangle.texturePoints[0].x + u * intersection.intersectedTriangle.texturePoints[1].x + v * intersection.intersectedTriangle.texturePoints[2].x) * textureFile.width;
+        float textureY = (w * intersection.intersectedTriangle.texturePoints[0].y + u * intersection.intersectedTriangle.texturePoints[1].y + v * intersection.intersectedTriangle.texturePoints[2].y) * textureFile.height;
 
 
-        uint8_t red = (pixelColor >> 16) & 0xFF;
-        uint8_t green = (pixelColor >> 8) & 0xFF;
-        uint8_t blue = pixelColor & 0xFF;
+        textureX = std::fmod(textureX, textureFile.width);
+        textureY = std::fmod(textureY, textureFile.height);
+
+
+        uint32_t colour_val = textureFile.pixels[static_cast<int>(textureY) * textureFile.width + static_cast<int>(textureX)];
+        int red = (colour_val >> 16) & 0xFF;
+        int green = (colour_val >> 8) & 0xFF;
+        int blue = colour_val & 0xFF;
+
 
         colour.red = red;
         colour.green = green;
