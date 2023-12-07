@@ -299,12 +299,14 @@ std::vector<ModelTriangle> readOBJ(const std::string& filename, float scale) {
     std::vector<TexturePoint> texturePoints;
     std::vector<std::pair<std::string, Colour>> palette;
 
-    readOBJColour("../textured-cornell-box.mtl", palette);
+//    readOBJColour("../textured-cornell-box.mtl", palette);
+    readOBJColour("../cornell-box.mtl", palette);
 
     std::string currentMaterial;
     std::string line;
     bool mirror=false;
     bool glass=false;
+    bool metal=false;
     bool texture=false;
 
     string material;
@@ -343,6 +345,9 @@ std::vector<ModelTriangle> readOBJ(const std::string& filename, float scale) {
             }
             triangle.mirror = mirror;
             triangle.glass = glass;
+            triangle.texture =texture;
+//            cout<<"check"<<texture<<endl;
+            triangle.metal=metal;
             //triangle.normal= calculateNormal(triangle);
             triangle.material=material;
             //cout<<"m:"<<triangle.material<<endl;
@@ -350,14 +355,18 @@ std::vector<ModelTriangle> readOBJ(const std::string& filename, float scale) {
         } else if (tokens[0] == "usemtl") {
             mirror= (tokens[1]=="Mirror");
             glass=(tokens[1]=="Glass");
-            //texture=(tokens[1]=="Texture");
+            metal=(tokens[1]=="Metal");
+            texture=(tokens[1]=="Texture");
             //cout<<"t:"<<texture<<endl;
             currentMaterial = tokens[1];
-            if(currentMaterial=="Texture"){
-                texture=true;
-                cout<<"1"<<endl;
-            }else {//cout<<"2"<<endl;
-                 texture =false;}
+            //cout<<"check"<<tokens[1]<<endl;
+
+//            if(currentMaterial=="Texture"){
+//                texture=true;
+//                //cout<<"1"<<endl;
+//            }else {
+//                //cout<<"2"<<endl;
+//                 texture =false;}
         }
     }
 
@@ -800,7 +809,7 @@ int main(int argc, char *argv[]) {
                 RenderScene(window, modelTriangles5, cameraPosition, Camera_Orientation, depthBuffer, true);
             }
             else if (model == Render) {
-                RenderScene(window, modelTriangles5, cameraPosition, Camera_Orientation, depthBuffer, false);
+                RenderScene(window, modelTriangles2, cameraPosition, Camera_Orientation, depthBuffer, false);
             }
             else if (model == Diffuse) {
                 DrawRay(modelTriangles5, window, cameraPosition, Camera_Orientation,  64.0f);
@@ -812,10 +821,10 @@ int main(int argc, char *argv[]) {
                 DrawRay(modelTriangles3, window, cameraPosition, Camera_Orientation, 256.0f);
             }
             else if (model == Phong) {
-                DrawRay(modelTriangles3, window, cameraPosition, Camera_Orientation,  256.0f);
+                DrawRay(modelTriangles1, window, cameraPosition, Camera_Orientation,  256.0f);
             }
             else if (model == Mirror) {
-                DrawRay(modelTriangles1, window, cameraPosition, Camera_Orientation,  256.0f);
+                DrawRay(modelTriangles2, window, cameraPosition, Camera_Orientation,  256.0f);
             }
 
         window.renderFrame();

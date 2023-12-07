@@ -70,7 +70,7 @@ vec3 lightPosition(0.0f,0.6f,1.2f);
 //
 //};
 
-TextureMap TextureFile("../texture_2.ppm");
+TextureMap TextureFile1("../texture_2.ppm");
 
 
 
@@ -104,6 +104,8 @@ vec3 refract(const vec3& incident, const vec3& normal, float indexOfRefraction) 
     return k < 0 ? vec3(0,0,0) : eta * incident + (eta * cosi - sqrtf(k)) * n;
 }
 
+
+
 RayTriangleIntersection Get_closest_intersection(vec3 cameraPosition, vec3 rayDirection, const std::vector<ModelTriangle>& triangles,int depth) {
     RayTriangleIntersection closestIntersection;
 
@@ -118,6 +120,10 @@ RayTriangleIntersection Get_closest_intersection(vec3 cameraPosition, vec3 rayDi
         vec3 possibleSolution = inverse(DEMatrix) * spVector;
 
         float t = possibleSolution.x, u = possibleSolution.y, v = possibleSolution.z;
+        float w =1-u-v;
+        glm::vec2 textureCoords = w *glm::vec2(triangle.texturePoints[0].x,triangle.texturePoints[0].y)+
+                u *glm::vec2(triangle.texturePoints[1].x,triangle.texturePoints[1].y)+
+                v *glm::vec2(triangle.texturePoints[2].x,triangle.texturePoints[2].y);
         if(u >= 0.0 && u <= 1.0 && v >= 0.0 && v <= 1.0 && (u + v) <= 1.0 && t > 0) {
             if(t < closestIntersection.distanceFromCamera) {
                 vec3 intersectionPoint=cameraPosition+possibleSolution.x*rayDirection;
@@ -126,7 +132,7 @@ RayTriangleIntersection Get_closest_intersection(vec3 cameraPosition, vec3 rayDi
                 closestIntersection.u = u;
                 closestIntersection.v = v;
                 closestIntersection=RayTriangleIntersection(intersectionPoint,closestIntersection.distanceFromCamera,triangle,closestIntersection.triangleIndex,u,v);
-
+                closestIntersection.Texture=textureCoords;
             }
         }
     }
@@ -156,9 +162,13 @@ RayTriangleIntersection Get_closest_intersection(vec3 cameraPosition, vec3 rayDi
         }
 
     }
-    else if(closestIntersection.intersectedTriangle.texture && depth<5){
-
-
+    else if(closestIntersection.intersectedTriangle.metal && depth<5){
+        glm::vec3 normal = calculateFaceNormal(closestIntersection.intersectedTriangle);
+        glm::vec3 reflectedDirection = glm::normalize(rayDirection) - 2 * glm::dot(rayDirection, normal) * normal;
+        RayTriangleIntersection metalIntersection = Get_closest_intersection(closestIntersection.intersectionPoint + reflectedDirection * 0.001f, reflectedDirection, triangles, depth+1);
+        if (!isinf(metalIntersection.distanceFromCamera)) {
+            closestIntersection = metalIntersection;
+        }
     }
 
     return closestIntersection;
@@ -369,8 +379,24 @@ glm::vec3 getRayDirection(float x,float y,glm::vec3 camera_position,mat3 Camera_
 
 
 
+glm::vec3 randomInHemisphere(const glm::vec3 &normal) {
+    glm::vec3 inUnitSphere;
+    do {
+        // Generate a random point inside a unit sphere
+        inUnitSphere = 2.0f * glm::vec3(rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, rand() / (float)RAND_MAX) - glm::vec3(1, 1, 1);
+    } while (glm::length(inUnitSphere) >= 1.0f);
 
-Colour CalculateColor(const vector<ModelTriangle>& triangles,RayTriangleIntersection &intersection, glm::vec3 &cameraPosition, float specularExponent, mat3 &Camera_Orientation,  glm::vec3 rayDirection) {
+    // If the point is on the opposite hemisphere to the normal, invert it
+    if (glm::dot(inUnitSphere, normal) < 0.0f) {
+        inUnitSphere = -inUnitSphere;
+    }
+
+    return inUnitSphere;
+}
+
+
+Colour CalculateColor(const vector<ModelTriangle>& triangles,RayTriangleIntersection &intersection, glm::vec3 &cameraPosition, float specularExponent, mat3 &Camera_Orientation,  glm::vec3 rayDirection, int depth=0) {
+    if (depth >= 5) return Colour(0,0,0);
     Colour colour;
     vector<vec3> lightSource=lightSources();
     vector<ModelTriangle> sphere1;
@@ -396,6 +422,21 @@ Colour CalculateColor(const vector<ModelTriangle>& triangles,RayTriangleIntersec
             normalTriangles.push_back(triangle);
         }
     }
+
+    TextureMap textureFile;
+//    bool applyTexture = false;
+//    if(intersection.intersectedTriangle.texture){
+//
+//        applyTexture=true;
+//    }
+
+
+//Texture
+
+
+
+
+
     if(intersection.intersectedTriangle.material=="sphere3"){
         colour = gouraudShading(intersection, lightPosition, cameraPosition, specularExponent, Camera_Orientation, triangles);
         //cout<<"g:"<<intersection.intersectedTriangle.material<<endl;
@@ -410,142 +451,217 @@ Colour CalculateColor(const vector<ModelTriangle>& triangles,RayTriangleIntersec
     else if(intersection.intersectedTriangle.material=="sphere1"){
         //specular
         float brightness = getBrightness(intersection, normal, cameraPosition, specularExponent,sphere3,Camera_Orientation,false,true);
-            shadowIntensity=clamp(shadowIntensity,0.4f,1.0f);
-            brightness *= shadowIntensity;
-            colour = intersection.intersectedTriangle.colour;
-            colour.red *= std::min(brightness, 1.0f);
-            colour.green *= std::min(brightness, 1.0f);
-            colour.blue *= std::min(brightness, 1.0f);
+        shadowIntensity=clamp(shadowIntensity,0.4f,1.0f);
+        brightness *= shadowIntensity;
+        colour = intersection.intersectedTriangle.colour;
+        colour.red *= std::min(brightness, 1.0f);
+        colour.green *= std::min(brightness, 1.0f);
+        colour.blue *= std::min(brightness, 1.0f);
         //cout<<"g:"<<colour<<endl;
 
     }
     else  {
-       float brightness = getBrightness(intersection, normal, cameraPosition, specularExponent, normalTriangles,Camera_Orientation, true, false);
-       shadowIntensity = clamp(shadowIntensity, 0.4f, 1.0f);
-       brightness *= shadowIntensity;
-       colour = intersection.intersectedTriangle.colour;
-       colour.red *= std::min(brightness, 1.0f);
-       colour.green *= std::min(brightness, 1.0f);
-       colour.blue *= std::min(brightness, 1.0f);
-   }
+        float brightness = getBrightness(intersection, normal, cameraPosition, specularExponent, normalTriangles,Camera_Orientation, true, false);
+        shadowIntensity = clamp(shadowIntensity, 0.4f, 1.0f);
+        brightness *= shadowIntensity;
+        colour = intersection.intersectedTriangle.colour;
+        colour.red *= std::min(brightness, 1.0f);
+        colour.green *= std::min(brightness, 1.0f);
+        colour.blue *= std::min(brightness, 1.0f);
+    }
 
-        if (intersection.intersectedTriangle.mirror) {
-            glm::vec3 reflectedDirection = glm::normalize(rayDirection) - 2 * glm::dot(rayDirection, normal) * normal;
-            RayTriangleIntersection reflectedIntersection = Get_closest_intersection(intersection.intersectionPoint + reflectedDirection * 0.001f, reflectedDirection, triangles,0);
-            if (!isinf(intersection.distanceFromCamera)) {
-                Colour reflectedColour = CalculateColor(triangles, reflectedIntersection, cameraPosition,
-                                                        specularExponent, Camera_Orientation, rayDirection);
-                colour = reflectedColour;
-            }
-
-    }else if(intersection.intersectedTriangle.glass){
-
-            float reflectivity = 0.1f;
-
-            glm::vec3 reflectedDirection = glm::normalize(rayDirection) - 2 * glm::dot(rayDirection, normal) * normal;
-            RayTriangleIntersection reflectedIntersection = Get_closest_intersection(intersection.intersectionPoint + reflectedDirection * 0.001f, reflectedDirection, triangles,0);
-
-            vec3 refractedRay = refract(rayDirection, normal, 1.5);
-            RayTriangleIntersection refractionIntersection = Get_closest_intersection(intersection.intersectionPoint + refractedRay * 0.001f, refractedRay, triangles, 0);
-            Colour reflectedColour =reflectedIntersection.intersectedTriangle.colour;
-            Colour refractionColour =refractionIntersection.intersectedTriangle.colour;
-            if (!isinf(intersection.distanceFromCamera)) {
-                 reflectedColour = CalculateColor(triangles, reflectedIntersection, cameraPosition,
-                                                     specularExponent, Camera_Orientation, rayDirection);
-
-                     refractionColour = CalculateColor(triangles, refractionIntersection, cameraPosition, specularExponent, Camera_Orientation, refractedRay);
-
-            }
-            colour.red = reflectedColour.red * reflectivity + refractionColour.red * (1 - reflectivity);
-            colour.green = reflectedColour.green * reflectivity + refractionColour.green * (1 - reflectivity);
-            colour.blue = reflectedColour.blue * reflectivity +refractionColour.blue * (1 - reflectivity);
-
+    if (intersection.intersectedTriangle.mirror&&depth<5) {
+        glm::vec3 reflectedDirection = glm::normalize(rayDirection) - 2 * glm::dot(rayDirection, normal) * normal;
+        RayTriangleIntersection reflectedIntersection = Get_closest_intersection(intersection.intersectionPoint + reflectedDirection * 0.001f, reflectedDirection, triangles,depth+1);
+        if (!isinf(intersection.distanceFromCamera)) {
+            Colour reflectedColour = CalculateColor(triangles, reflectedIntersection, cameraPosition,
+                                                    specularExponent, Camera_Orientation, rayDirection,depth+1);
+            colour = reflectedColour;
 
 
         }
-        //Texture
-//        else if(intersection.intersectedTriangle.texture){
-//            TextureMap& textureFile=TextureFile;
 
-              //cout<<"1"<<endl;
-//            float proportion0 = 1 - (intersection.u + intersection.v);
-//            float proportion1 = intersection.u;
-//            float proportion2 = intersection.v;
-//            TexturePoint tp0 = intersection.intersectedTriangle.texturePoints[0];
-//            TexturePoint tp1 = intersection.intersectedTriangle.texturePoints[1];
-//            TexturePoint tp2 = intersection.intersectedTriangle.texturePoints[2];
-//
-//            TexturePoint texturePoint;
-//            texturePoint.x = (proportion0 * tp0.x) + (proportion1 * tp1.x) + (proportion2 * tp2.x);
-//            texturePoint.y = (proportion0 * tp0.y) + (proportion1 * tp1.y) + (proportion2 * tp2.y);
+    }else if(intersection.intersectedTriangle.glass&&depth<5){
 
+        float reflectivity = 0.1f;
 
-//            ModelTriangle t = intersection.intersectedTriangle;
-//
-//            float x = ((1 - intersection.u - intersection.v) * t.texturePoints[0].x + intersection.u * t.texturePoints[1].x + intersection.v * t.texturePoints[2].x);
-//            float y = ((1 - intersection.u - intersection.v) * t.texturePoints[0].y + intersection.u * t.texturePoints[1].y +intersection.v * t.texturePoints[2].y);
-//
-//            x *= TextureFile.width;
-//            y *= TextureFile.height;
-//            uint32_t colour_val = TextureFile.pixels[round(x) + (TextureFile.width * round(y))];
+        glm::vec3 reflectedDirection = glm::normalize(rayDirection) - 2 * glm::dot(rayDirection, normal) * normal;
+        RayTriangleIntersection reflectedIntersection = Get_closest_intersection(intersection.intersectionPoint + reflectedDirection * 0.001f, reflectedDirection, triangles,depth+1);
 
-           //uint32_t colour_val = TextureFile.pixels[round(texturePoint.x) + (TextureFile.width * round(texturePoint.y))];
-//
+        vec3 refractedRay = refract(rayDirection, normal, 1.5);
+        RayTriangleIntersection refractionIntersection = Get_closest_intersection(intersection.intersectionPoint + refractedRay * 0.001f, refractedRay, triangles, depth+1);
+        Colour reflectedColour =reflectedIntersection.intersectedTriangle.colour;
+        Colour refractionColour =refractionIntersection.intersectedTriangle.colour;
+        if (!isinf(intersection.distanceFromCamera)) {
+            reflectedColour = CalculateColor(triangles, reflectedIntersection, cameraPosition,
+                                             specularExponent, Camera_Orientation, rayDirection,depth+1);
 
-//
-//            const ModelTriangle& triangle = intersection.intersectedTriangle;
-//            float w = 1.0f - intersection.u - intersection.v;
-//
-//            TexturePoint texturePoint;
-//            texturePoint.x = w * triangle.texturePoints[0].x + intersection.u * triangle.texturePoints[1].x + intersection.v * triangle.texturePoints[2].x;
-//            texturePoint.y = w * triangle.texturePoints[0].y + intersection.u * triangle.texturePoints[1].y + intersection.v * triangle.texturePoints[2].y;
-//
-//            int x = static_cast<int>(texturePoint.x * TextureFile.width) %TextureFile.width;
-//            int y = static_cast<int>(texturePoint.y * TextureFile.height) % TextureFile.height;
-//            uint32_t colour_val =  TextureFile.pixels[y * TextureFile.width + x];
+            refractionColour = CalculateColor(triangles, refractionIntersection, cameraPosition, specularExponent, Camera_Orientation, refractedRay,depth+1);
 
-//
-//            int red = (colour_val >> 16) & 0xFF;
-//            int green = (colour_val >> 8) & 0xFF;
-//            int blue = colour_val & 0xFF;
-//            colour.red = red;
-//            colour.green = green;
-//            colour.blue = blue;
+        }
+        colour.red = reflectedColour.red * reflectivity + refractionColour.red * (1 - reflectivity);
+        colour.green = reflectedColour.green * reflectivity + refractionColour.green * (1 - reflectivity);
+        colour.blue = reflectedColour.blue * reflectivity +refractionColour.blue * (1 - reflectivity);
 
 
 
+    }else if(intersection.intersectedTriangle.texture&&depth<5){
+        textureFile=TextureFile1;
+
+        cout<<"hhh:"<<endl;
+        int pixelX = static_cast<int>(intersection.Texture.x * textureFile.width) % static_cast<int>(textureFile.width);
+        int pixelY = static_cast<int>(intersection.Texture.y * textureFile.height) % static_cast<int>(textureFile.height);
 
 
+        //uint32_t pixel =TextureFile1     ;
+        uint32_t pixelColor = textureFile.getPixel(pixelX, pixelY);
 
-//            float u = intersection.u;
-//            float v = intersection.v;
-//            float w = 1.0f - u - v; // The third barycentric coordinate
-//            TexturePoint tp0 = intersection.intersectedTriangle.texturePoints[0];
-//            TexturePoint tp1 = intersection.intersectedTriangle.texturePoints[1];
-//            TexturePoint tp2 = intersection.intersectedTriangle.texturePoints[2];
-//            float textureX = (w * tp0.x + u * tp1.x + v * tp2.x) * (textureFile.width - 1);
-//            float textureY = (w * tp0.y + u * tp1.y + v * tp2.y) * (textureFile.height - 1);
+
+        uint8_t red = (pixelColor >> 16) & 0xFF;
+        uint8_t green = (pixelColor >> 8) & 0xFF;
+        uint8_t blue = pixelColor & 0xFF;
+
+        colour.red = red;
+        colour.green = green;
+        colour.blue = blue;
+
+
+    }
+    else if(intersection.intersectedTriangle.metal&&depth<5){
+
+        glm::vec3 normal = calculateFaceNormal(intersection.intersectedTriangle);
+        glm::vec3 reflectedDirection = glm::normalize(rayDirection - 2 * glm::dot(rayDirection, normal) * normal);
+        float roughnessFactor = 0.05;
+        glm::vec3 randomVector = randomInHemisphere(normal);
+        reflectedDirection += roughnessFactor * randomVector;
+        reflectedDirection = glm::normalize(reflectedDirection);
+        RayTriangleIntersection metalIntersection = Get_closest_intersection(intersection.intersectionPoint + reflectedDirection * 0.001f, reflectedDirection, triangles, depth + 1);
+        Colour reflectedColour;
+        if (!isinf(metalIntersection.distanceFromCamera)) {
+             reflectedColour = CalculateColor(triangles, metalIntersection, cameraPosition, specularExponent, Camera_Orientation, reflectedDirection, depth + 1);
+
+        }
+        //colour = reflectedColour;
+        float reflectivity = 0.5;
+        Colour goldBaseColour(255, 215, 0);
+
+        colour.red = glm::mix(goldBaseColour.red, reflectedColour.red, reflectivity);
+        colour.green = glm::mix(goldBaseColour.green, reflectedColour.green, reflectivity);
+        colour.blue = glm::mix(goldBaseColour.blue, reflectedColour.blue, reflectivity);
+        //cout<<"metal"<<colour<<endl;
+    }
+
+
+//    else if(intersection.intersectedTriangle.texture){
+//        TextureMap& textureFile=TextureFile1;
 //
-//            // Ensure we don't go out of bounds
-//            textureX = fmod(textureX, textureFile.width);
-//            textureY = fmod(textureY, textureFile.height);
+//       // cout<<"1"<<endl;
 //
-//            // Sample the texture color
-//            uint32_t colour_val = textureFile.pixels[static_cast<int>(textureY) * textureFile.width + static_cast<int>(textureX)];
-//            int red = (colour_val >> 16) & 0xFF;
-//            int green = (colour_val >> 8) & 0xFF;
-//            int blue = colour_val & 0xFF;
-//            colour.red = red;
-//            colour.green = green;
-//            colour.blue = blue;
+//        float u = intersection.u;
+//        float v = intersection.v;
+//        float w = 1.0f - u - v;
+//        float textureX = (w * intersection.intersectedTriangle.texturePoints[0].x + u * intersection.intersectedTriangle.texturePoints[1].x + v * intersection.intersectedTriangle.texturePoints[2].x) * textureFile.width;
+//        float textureY = (w * intersection.intersectedTriangle.texturePoints[0].y + u * intersection.intersectedTriangle.texturePoints[1].y + v * intersection.intersectedTriangle.texturePoints[2].y) * textureFile.height;
 //
 //
+//        textureX = std::fmod(textureX, textureFile.width);
+//        textureY = std::fmod(textureY, textureFile.height);
 //
-//        }
+//
+//        uint32_t colour_val = textureFile.pixels[static_cast<int>(textureY) * textureFile.width + static_cast<int>(textureX)];
+//        int red = (colour_val >> 16) & 0xFF;
+//        int green = (colour_val >> 8) & 0xFF;
+//        int blue = colour_val & 0xFF;
+//
+//
+//        colour.red = red;
+//        colour.green = green;
+//        colour.blue = blue;
+//
+//
+//
+//
+//
+//
+//
+//
+////            float proportion0 = 1 - (intersection.u + intersection.v);
+////            float proportion1 = intersection.u;
+////            float proportion2 = intersection.v;
+////            TexturePoint tp0 = intersection.intersectedTriangle.texturePoints[0];
+////            TexturePoint tp1 = intersection.intersectedTriangle.texturePoints[1];
+////            TexturePoint tp2 = intersection.intersectedTriangle.texturePoints[2];
+////
+////            TexturePoint texturePoint;
+////            texturePoint.x = (proportion0 * tp0.x) + (proportion1 * tp1.x) + (proportion2 * tp2.x);
+////            texturePoint.y = (proportion0 * tp0.y) + (proportion1 * tp1.y) + (proportion2 * tp2.y);
+////
+////
+////            ModelTriangle t = intersection.intersectedTriangle;
+////
+////            float x = ((1 - intersection.u - intersection.v) * t.texturePoints[0].x + intersection.u * t.texturePoints[1].x + intersection.v * t.texturePoints[2].x);
+////            float y = ((1 - intersection.u - intersection.v) * t.texturePoints[0].y + intersection.u * t.texturePoints[1].y +intersection.v * t.texturePoints[2].y);
+////
+////            x *= TextureFile1.width;
+////            y *= TextureFile1.height;
+////            uint32_t colour_val = TextureFile1.pixels[round(x) + (TextureFile1.width * round(y))];
+////
+////           //uint32_t colour_val = TextureFile1.pixels[round(texturePoint.x) + (TextureFile1.width * round(texturePoint.y))];
+////
+////
+//////
+//////            const ModelTriangle& triangle = intersection.intersectedTriangle;
+//////            float w = 1.0f - intersection.u - intersection.v;
+//////
+//////            TexturePoint texturePoint;
+//////            texturePoint.x = w * triangle.texturePoints[0].x + intersection.u * triangle.texturePoints[1].x + intersection.v * triangle.texturePoints[2].x;
+//////            texturePoint.y = w * triangle.texturePoints[0].y + intersection.u * triangle.texturePoints[1].y + intersection.v * triangle.texturePoints[2].y;
+//////
+//////            int x = static_cast<int>(texturePoint.x * TextureFile.width) %TextureFile.width;
+//////            int y = static_cast<int>(texturePoint.y * TextureFile.height) % TextureFile.height;
+//////            uint32_t colour_val =  TextureFile.pixels[y * TextureFile.width + x];
+////
+////            int red = (colour_val >> 16) & 0xFF;
+////            int green = (colour_val >> 8) & 0xFF;
+////            int blue = colour_val & 0xFF;
+////            colour.red = red;
+////            colour.green = green;
+////            colour.blue = blue;
+//
+//
+////            float u = intersection.u;
+////            float v = intersection.v;
+////            float w = 1.0f - u - v; // The third barycentric coordinate
+////            TexturePoint tp0 = intersection.intersectedTriangle.texturePoints[0];
+////            TexturePoint tp1 = intersection.intersectedTriangle.texturePoints[1];
+////            TexturePoint tp2 = intersection.intersectedTriangle.texturePoints[2];
+////            float textureX = (w * tp0.x + u * tp1.x + v * tp2.x) * (textureFile.width - 1);
+////            float textureY = (w * tp0.y + u * tp1.y + v * tp2.y) * (textureFile.height - 1);
+////
+////            // Ensure we don't go out of bounds
+////            textureX = fmod(textureX, textureFile.width);
+////            textureY = fmod(textureY, textureFile.height);
+////
+////            // Sample the texture color
+////            uint32_t colour_val = textureFile.pixels[static_cast<int>(textureY) * textureFile.width + static_cast<int>(textureX)];
+////            int red = (colour_val >> 16) & 0xFF;
+////            int green = (colour_val >> 8) & 0xFF;
+////            int blue = colour_val & 0xFF;
+////            colour.red = red;
+////            colour.green = green;
+////            colour.blue = blue;
+//
+//
+//
+//    }
+
 
 
     return colour;
 }
+
+
+
 
 void DrawRay(const std::vector<ModelTriangle>& triangles, DrawingWindow &window, glm::vec3 camera_position,mat3 Camera_Orientation,float specularExponent) {
     for (int x = 0; x < WIDTH; x++) {

@@ -11,6 +11,7 @@ struct RayTriangleIntersection {
 	size_t triangleIndex;
     float u;
     float v;
+    glm::vec2 Texture;
 
 
 
