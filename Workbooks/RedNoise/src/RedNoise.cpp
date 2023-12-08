@@ -12,7 +12,7 @@
 #include <TextureMap.h>
 #include <ModelTriangle.h>
 #include <RayTriangleIntersection.h>
-
+#include <algorithm>
 using namespace std;
 using namespace glm;
 
@@ -24,6 +24,7 @@ std::vector<glm::vec3> lightSources() {
     float height=0.6f;
     std::vector<glm::vec3> lightSources;
     for (int i = 0; i < numSources; ++i) {
+        //AI help me calculate the formulas
         float angle = 2.0f * M_PI * i / numSources;
         float x = center.x + radius * cos(angle);
         float z = center.z + radius * sin(angle);
@@ -54,20 +55,7 @@ TextureMap normalTexture("../texture.ppm");
 static bool orbitEnabled = false;
 
 
-void moveLights(float scale, string axis){
-    vector<vec3>lightSource=lightSources();
-    for(int i=0;i < lightSource.size();i++){
-        if(axis=="x"){
-            lightSource[i].x+=scale;
-            //cout<<"lights:"<<lightSource[i].x<<endl;
-        }else if(axis=="y"){
-            lightSource[i].y+=scale;
-        }else if(axis=="z"){
-            lightSource[i].z+=scale;
-        }
 
-    }
-}
 
 void ClearDepthBuffer() {
     for (int x = 0; x < WIDTH; x++) {
@@ -463,6 +451,7 @@ glm::vec3 calculateFaceNormal(const ModelTriangle& triangle) {
     return glm::normalize(normal);
 }
 
+//AI
 vec3 refract(const vec3& incident, const vec3& normal, float indexOfRefraction) {
     float cosi = clamp(-1.0f, 1.0f, dot(incident, normal));
     float etai = 1, etat = indexOfRefraction;
