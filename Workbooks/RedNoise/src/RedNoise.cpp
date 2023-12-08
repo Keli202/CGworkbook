@@ -835,27 +835,36 @@ Colour CalculateColor(const vector<ModelTriangle>& triangles,RayTriangleIntersec
 
     }else if(intersection.intersectedTriangle.glass&&depth<5){
 
-        float reflectivity = 0.1f;
+        float cosi = glm::clamp(glm::dot(rayDirection, normal), -1.0f, 1.0f);
+        float etai = 1, etat = 1.5f;
+        if (cosi > 0) { std::swap(etai, etat); }
+        float sint = etai / etat * sqrtf(std::max(0.f, 1 - cosi * cosi));
+        float reflectivity;
+        if (sint >= 1) {
+            reflectivity = 1;
+        } else {
+            float cost = sqrtf(std::max(0.f, 1 - sint * sint));
+            cosi = fabsf(cosi);
+            float Rs = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost));
+            float Rp = ((etai * cosi) - (etat * cost)) / ((etai * cosi) + (etat * cost));
+            reflectivity = (Rs * Rs + Rp * Rp) / 2;
+        }
+
 
         glm::vec3 reflectedDirection = glm::normalize(rayDirection) - 2 * glm::dot(rayDirection, normal) * normal;
-        RayTriangleIntersection reflectedIntersection = Get_closest_intersection(intersection.intersectionPoint + reflectedDirection * 0.001f, reflectedDirection, triangles,depth+1);
+        glm::vec3 refractedRay = refract(rayDirection, normal, etai / etat);
 
-        vec3 refractedRay = refract(rayDirection, normal, 1.0);
+
+        RayTriangleIntersection reflectedIntersection = Get_closest_intersection(intersection.intersectionPoint + reflectedDirection * 0.001f, reflectedDirection, triangles, depth+1);
         RayTriangleIntersection refractionIntersection = Get_closest_intersection(intersection.intersectionPoint + refractedRay * 0.001f, refractedRay, triangles, depth+1);
-        Colour reflectedColour =reflectedIntersection.intersectedTriangle.colour;
-        Colour refractionColour =refractionIntersection.intersectedTriangle.colour;
-        if (!isinf(intersection.distanceFromCamera)) {
-            reflectedColour = CalculateColor(triangles, reflectedIntersection, cameraPosition,
-                                             specularExponent, Camera_Orientation, rayDirection,depth+1);
 
-            refractionColour = CalculateColor(triangles, refractionIntersection, cameraPosition, specularExponent, Camera_Orientation, refractedRay,depth+1);
+        Colour reflectedColour = CalculateColor(triangles, reflectedIntersection, cameraPosition, specularExponent, Camera_Orientation, reflectedDirection, depth+1);
+        Colour refractionColour = CalculateColor(triangles, refractionIntersection, cameraPosition, specularExponent, Camera_Orientation, refractedRay, depth+1);
 
-        }
+
         colour.red = reflectedColour.red * reflectivity + refractionColour.red * (1 - reflectivity);
         colour.green = reflectedColour.green * reflectivity + refractionColour.green * (1 - reflectivity);
-        colour.blue = reflectedColour.blue * reflectivity +refractionColour.blue * (1 - reflectivity);
-
-
+        colour.blue = reflectedColour.blue * reflectivity + refractionColour.blue * (1 - reflectivity);
 
     }else if(intersection.intersectedTriangle.texture&&depth<5){
         textureFile=TextureFile1;
@@ -1046,6 +1055,7 @@ int main(int argc, char *argv[]) {
     std::vector<ModelTriangle> modelTriangles4=readOBJ("../loveBox3.obj", 0.35);
     std::vector<ModelTriangle> modelTriangles5=readOBJ("../loveBox.obj", 0.35);
     std::vector<ModelTriangle> modelTriangles6=readOBJ("../cornell-box2.obj", 0.35);
+    std::vector<ModelTriangle> modelTriangles7=readOBJ("../cornell-box3.obj", 0.35);
 
 
 
@@ -1091,7 +1101,10 @@ int main(int argc, char *argv[]) {
         //raytrace texture
         //DrawRay(modelTriangles2, window, cameraPosition, Camera_Orientation,  256.0f);
 
-        //Glass Metal
+        // Metal
+        //DrawRay(modelTriangles7, window, cameraPosition, Camera_Orientation,  256.0f);
+
+        //Glass
         //DrawRay(modelTriangles6, window, cameraPosition, Camera_Orientation,  256.0f);
 
         //normal raytrace
@@ -1140,7 +1153,7 @@ int main(int argc, char *argv[]) {
 //
 //        }
 
-//
+
 //        for (int frameCount = 0; frameCount < 10; frameCount++) {
 //            window.clearPixels();
 //            int n_zero = 5;
@@ -1177,7 +1190,7 @@ int main(int argc, char *argv[]) {
 //        }
 //
 //animationCompleted = true;
-
+//
 
 
 
