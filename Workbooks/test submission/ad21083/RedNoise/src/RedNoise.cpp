@@ -1049,10 +1049,10 @@ int main(int argc, char *argv[]) {
 
 
     glm::vec3 cameraPosition(0.0f, 0.0f, 4.0f);
-    std::vector<ModelTriangle> modelTriangles1=readOBJ("../cornell-box.obj", 0.35);
-    std::vector<ModelTriangle> modelTriangles2=readOBJ("../textured-cornell-box.obj", 0.35);
-    std::vector<ModelTriangle> modelTriangles3=readOBJ("../sphere.obj", 0.35);
-    std::vector<ModelTriangle> modelTriangles4=readOBJ("../loveBox3.obj", 0.35);
+    std::vector<ModelTriangle> modelTriangles1=readOBJ("cornell-box.obj", 0.35);
+    std::vector<ModelTriangle> modelTriangles2=readOBJ("textured-cornell-box.obj", 0.35);
+    std::vector<ModelTriangle> modelTriangles3=readOBJ("sphere.obj", 0.35);
+    std::vector<ModelTriangle> modelTriangles4=readOBJ("loveBox3.obj", 0.35);
     std::vector<ModelTriangle> modelTriangles5=readOBJ("loveBox.obj", 0.35);
     std::vector<ModelTriangle> modelTriangles6=readOBJ("cornell-box2.obj", 0.35);
     std::vector<ModelTriangle> modelTriangles7=readOBJ("cornell-box3.obj", 0.35);
