@@ -1,0 +1,23 @@
+# ninja log v5
+5465	5713	1702022529424482986	RedNoise	4e5e4d16ac97f227
+10	5437	1702022529135328089	CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o	e3b0d0870857e726
+1633	2934	1701972034952725919	CMakeFiles/RedNoise.dir/libs/sdw/TexturePoint.cpp.o	17b89e1ee807c1e5
+1	1593	1701972033610304123	CMakeFiles/RedNoise.dir/libs/sdw/CanvasTriangle.cpp.o	15a2365cafce6c4f
+40	2195	1701985763429172574	CMakeFiles/RedNoise.dir/libs/sdw/ModelTriangle.cpp.o	32bdfef779c951a1
+2	3529	1701972035542322699	CMakeFiles/RedNoise.dir/libs/sdw/DrawingWindow.cpp.o	23b8f0b51f196307
+1	1632	1701972033650123898	CMakeFiles/RedNoise.dir/libs/sdw/Colour.cpp.o	b92691b6a1a348a4
+1658	3195	1701972035208157792	CMakeFiles/RedNoise.dir/libs/sdw/Utils.cpp.o	1c5ec6add3ebc086
+8	1548	1701990408805317567	CMakeFiles/RedNoise.dir/libs/sdw/RayTriangleIntersection.cpp.o	8da9d73fc412bab5
+1595	3826	1701972035843182424	CMakeFiles/RedNoise.dir/libs/sdw/TextureMap.cpp.o	44c91047633d3d53
+0	1658	1701972033674439368	CMakeFiles/RedNoise.dir/libs/sdw/CanvasPoint.cpp.o	b043f4433240b4e2
+15	2049	1702028520744259167	CMakeFiles/RedNoise.dir/libs/sdw/CanvasTriangle.cpp.o	890976c2ab8305fc
+15	2079	1702028520776155309	CMakeFiles/RedNoise.dir/libs/sdw/CanvasPoint.cpp.o	2cc73c0037a76186
+16	2081	1702028520776889897	CMakeFiles/RedNoise.dir/libs/sdw/Colour.cpp.o	5d604ca3f56b0d74
+16	2441	1702028521134465766	CMakeFiles/RedNoise.dir/libs/sdw/RayTriangleIntersection.cpp.o	279c7962cd3dd5cf
+16	2450	1702028521145441518	CMakeFiles/RedNoise.dir/libs/sdw/ModelTriangle.cpp.o	fe325d1f034fd854
+2079	3153	1702028521852183756	CMakeFiles/RedNoise.dir/libs/sdw/TexturePoint.cpp.o	c70ef2e1c0c0b45
+2081	3358	1702028522054581232	CMakeFiles/RedNoise.dir/libs/sdw/Utils.cpp.o	fc585e7e004326a0
+16	3621	1702028522314857572	CMakeFiles/RedNoise.dir/libs/sdw/DrawingWindow.cpp.o	23c22c801008a4e7
+2049	3958	1702028522657095565	CMakeFiles/RedNoise.dir/libs/sdw/TextureMap.cpp.o	6b0e15acc804fd6d
+2442	7311	1702028526004132994	CMakeFiles/RedNoise.dir/src/RedNoise.cpp.o	5eac1b230f2b7f59
+7315	7434	1702028526139913886	RedNoise	4e5e4d16ac97f227
